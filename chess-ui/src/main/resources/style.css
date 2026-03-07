@@ -1,0 +1,25 @@
+.neon-button{
+ -fx-background-color:transparent;
+ -fx-border-color: #00f5ff;
+ -fx-text-fill: #00f5ff;
+ -fx-border-radius: 14;
+ -fx-background-radius :14;
+ -fx-border-padding: 8 24 8 24;
+ -fx-front-size:18px;
+}
+
+
+.neon-button:hover {
+  -fx-background-color :rgba(0,245,255,0.08);
+  -fx-effect: dropshadow(gaussian, #00f5ff, 20, 0.5,0,0);
+}
+
+.neon-button:pressed{
+-fx-background-color-rgba(0,245,255,0.18);
+}
+
+.neon-label{
+-fx-background-color: transparent;
+-fx-text-fill: white;
+-fx-font-size: 18px;
+}
