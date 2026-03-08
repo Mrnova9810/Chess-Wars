@@ -11,7 +11,6 @@ public class Board {
         board[x][y] = piece;
     }
 
-
     public  boolean isEmpty(int x, int y ){
         return board[x][y] == null;
     }

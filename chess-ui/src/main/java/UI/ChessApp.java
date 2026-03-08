@@ -26,6 +26,9 @@ public class ChessApp extends Application {
                 if(e.getCode() == KeyCode.getKeyCode("F") ) {
                    menuWindow.boardLayout.chessboard.flipper();
                 }
+            if(e.getCode() == KeyCode.getKeyCode("C")){
+                System.out.println( menuWindow.boardLayout.chessboard.controller.state.CreateFEN());
+            }
         });
         stage.setTitle("Chess_In_fx");
         stage.setScene(scene);

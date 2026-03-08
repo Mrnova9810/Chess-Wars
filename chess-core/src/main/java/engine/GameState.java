@@ -65,7 +65,6 @@ public class GameState {
         Piece isKing;
         Piece.Color enemyColor = (ofColor == Piece.Color.WHITE) ? Piece.Color.BLACK : Piece.Color.WHITE;
 
-
         for(int row = 0; row <=7;row ++){
             for(int col = 0; col <= 7; col++){
                 isKing = board.get(row,col);
@@ -325,8 +324,6 @@ public class GameState {
 
 
         switchTurn();
-
-
 
            // en-passant square setup
            if(p.type == Piece.Type.PAWN && Math.abs( move.toRow - move.fromRow) == 2){
@@ -710,4 +707,245 @@ public class GameState {
     }
 
 
+    public String CreateFEN(){
+         StringBuilder FEN = new StringBuilder();
+
+         // add board pieces location
+         for (int row = 0; row <= 7; row++ ){
+             int countSpace = 0;
+
+             for (int col = 0; col <= 7 ; col++){
+                 Piece p = board.get(row,col);
+                 if(p == null){
+                     countSpace++;
+                     if(col == 7){
+                         FEN.append(countSpace).append("/");
+                         countSpace =0;
+                     }
+                   continue;
+                 }
+                 if(p.color == Piece.Color.WHITE) {
+                     switch (p.type) {
+                         case PAWN -> {
+                             if (countSpace != 0) {
+                                 FEN.append(countSpace);
+                                 countSpace = 0;
+                             }
+                             FEN.append("P");
+                         }
+                         case ROOK -> {
+                             if (countSpace != 0) {
+                                 FEN.append(countSpace);
+                                 countSpace = 0;
+                             }
+
+                             FEN.append("R");
+                         }
+                         case KNIGHT -> {
+                             if (countSpace != 0) {
+                                 FEN.append(countSpace);
+                                 countSpace = 0;
+                             }
+                             FEN.append("N");
+                         }
+                         case BISHOP -> {
+                             if (countSpace != 0) {
+                                 FEN.append(countSpace);
+                                 countSpace = 0;
+                             }
+                             FEN.append("B");
+                         }
+                         case KING -> {
+                             if (countSpace != 0) {
+                                 FEN.append(countSpace);
+                                 countSpace = 0;
+                             }
+                             FEN.append("K");
+                         }
+                         case QUEEN -> {
+                             if (countSpace != 0) {
+                                 FEN.append(countSpace);
+                                 countSpace = 0;
+                             }
+                             FEN.append("Q");
+                         }
+
+
+                     }
+                 }
+                 if(p.color == Piece.Color.BLACK) {
+                     switch (p.type) {
+                         case PAWN -> {
+                             if (countSpace != 0) {
+                                 FEN.append(countSpace);
+                                 countSpace = 0;
+                             }
+                             FEN.append("p");
+                         }
+                         case ROOK -> {
+                             if (countSpace != 0) {
+                                 FEN.append(countSpace);
+                                 countSpace = 0;
+                             }
+
+                             FEN.append("r");
+                         }
+                         case KNIGHT -> {
+                             if (countSpace != 0) {
+                                 FEN.append(countSpace);
+                                 countSpace = 0;
+                             }
+                             FEN.append("n");
+                         }
+                         case BISHOP -> {
+                             if (countSpace != 0) {
+                                 FEN.append(countSpace);
+                                 countSpace = 0;
+                             }
+                             FEN.append("b");
+                         }
+                         case KING -> {
+                             if (countSpace != 0) {
+                                 FEN.append(countSpace);
+                                 countSpace = 0;
+                             }
+                             FEN.append("k");
+                         }
+                         case QUEEN -> {
+                             if (countSpace != 0) {
+                                 FEN.append(countSpace);
+                                 countSpace = 0;
+                             }
+                             FEN.append("q");
+                         }
+                     }
+                 }
+
+                 // end spaces
+                 if(col == 7  && countSpace != 0){
+                     FEN.append(countSpace);
+                 }
+                 if(col == 7 && row != 7){
+                     FEN.append("/");
+                 }
+
+             }
+
+
+
+
+         }
+
+         FEN.append(" ");  // for next type of status storing
+
+        // turn
+        if(turn == Piece.Color.WHITE){
+            FEN.append("w");
+        }else{
+            FEN.append("b");
+        }
+
+        FEN.append(" ");  // for next type of status storing
+
+
+         // add castling  --> WK , WQ , BK , BQ
+        StringBuilder castle = new StringBuilder();
+        if((castlingRights & 0b0001) != 0) castle.append("K");
+        if((castlingRights & 0b0010) != 0) castle.append("Q");
+        if((castlingRights & 0b0100) != 0) castle.append("k");
+        if((castlingRights & 0b1000) != 0) castle.append("q");
+
+        if(castle.isEmpty()) castle.append("-");
+        FEN.append(castle);
+
+
+        FEN.append(" ");
+
+
+        //  en passant
+        if(enPassantCol == -1){
+            FEN.append("-");
+        }else {
+            char file = (char)('a' + enPassantCol);
+            int rank = (8-enPassantRow);
+            FEN.append(file).append(rank);
+        }
+
+
+         String fen = FEN.toString();
+         return fen;
+    }
+
+    public void ReCreateBoard(String FEN){
+         String[] parts = FEN.split(" ");
+         String boardPosition = parts[0];
+         String turn = parts[1];
+         String casting = parts[2];
+         String en_passantSquare = parts[3];
+
+         int countIndex = 0;
+         for (int row = 0; row <= 7; row++){
+             for (int col = 0; col <= 7;col++){
+                 char p = boardPosition.charAt(countIndex);
+                 Piece.Type type;
+                 Piece.Color color;
+                // if( p.)   p is number then...?
+
+                 switch (p){
+                     case 'P' -> {
+                         type = Piece.Type.PAWN;
+                         color = Piece.Color.WHITE;
+                     }
+                     case 'R' -> {
+                         type = Piece.Type.ROOK;
+                         color = Piece.Color.WHITE;
+                     }
+                     case 'N' -> {
+                         type = Piece.Type.KNIGHT;
+                         color = Piece.Color.WHITE;
+                     }
+                     case 'B' -> {
+                         type = Piece.Type.BISHOP;
+                         color = Piece.Color.WHITE;
+                     }
+                     case 'K' -> {
+                         type = Piece.Type.KING;
+                         color = Piece.Color.WHITE;
+                     }case 'Q' -> {
+                         type = Piece.Type.QUEEN;
+                         color = Piece.Color.WHITE;
+                     }
+                     case 'p' -> {
+                         type = Piece.Type.PAWN;
+                         color = Piece.Color.BLACK;
+                     }
+                     case 'r' -> {
+                         type = Piece.Type.ROOK;
+                         color = Piece.Color.BLACK;
+                     }
+                     case 'n' -> {
+                         type = Piece.Type.KNIGHT;
+                         color = Piece.Color.BLACK;
+                     }
+                     case 'b' -> {
+                         type = Piece.Type.BISHOP;
+                         color = Piece.Color.BLACK;
+                     }
+                     case 'k' -> {
+                         type = Piece.Type.KING;
+                         color = Piece.Color.BLACK;
+                     }
+                     case 'q' -> {
+                         type = Piece.Type.QUEEN;
+                         color = Piece.Color.BLACK;
+                     }
+                     default -> {
+                         continue;
+                     }
+
+                 }
+                 board.set(row,col, new Piece(type, color));
+             }
+         }
+    }
 }
