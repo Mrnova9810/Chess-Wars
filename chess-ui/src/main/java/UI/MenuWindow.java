@@ -164,7 +164,7 @@ public class MenuWindow  extends StackPane {
           VBox PlayerVsPlayer = CreateCardModes( passByPass, "Player vs Player ");
 
           PlayerVsPlayer.setOnMouseClicked(e->{
-              boardLayout.chessboard.controller.startFreshGame();
+              boardLayout.chessboard.controller.startFreshGame(true);
           });
           VBox multiplayer   = CreateCardModes(multiplayerImage, "Multi player match");
 

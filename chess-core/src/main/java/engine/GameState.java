@@ -3,6 +3,7 @@ package engine;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class GameState {
 
@@ -718,7 +719,7 @@ public class GameState {
                  Piece p = board.get(row,col);
                  if(p == null){
                      countSpace++;
-                     if(col == 7){
+                     if(col == 7 && row != 7){
                          FEN.append(countSpace).append("/");
                          countSpace =0;
                      }
@@ -879,18 +880,38 @@ public class GameState {
     public void ReCreateBoard(String FEN){
          String[] parts = FEN.split(" ");
          String boardPosition = parts[0];
-         String turn = parts[1];
+         String playerTurn = parts[1];
          String casting = parts[2];
          String en_passantSquare = parts[3];
 
-         int countIndex = 0;
+         String[] Rank  =  boardPosition.split("/");
+
+
+         // clear board pieces
+        for(int row = 0; row <=7; row++){
+            for (int col= 0; col <=7;col++){
+                board.set(row,col,null);
+            }
+        }
+
+
+
          for (int row = 0; row <= 7; row++){
-             for (int col = 0; col <= 7;col++){
-                 char p = boardPosition.charAt(countIndex);
+             int indexCounter = 0;
+
+             for (int col = 0; col < Rank[row].length() ;col++){
+                 char p = Rank[row].charAt(col);
                  Piece.Type type;
                  Piece.Color color;
                 // if( p.)   p is number then...?
 
+                 if(isDigit(p)){
+                     int emptySpace = p -'0';
+                     indexCounter += emptySpace;
+                     continue;
+                 }
+
+                 // Pieces
                  switch (p){
                      case 'P' -> {
                          type = Piece.Type.PAWN;
@@ -940,12 +961,63 @@ public class GameState {
                          color = Piece.Color.BLACK;
                      }
                      default -> {
-                         continue;
+                         throw new IllegalArgumentException("Invalid FEN piece: " + p);
                      }
 
+
+
                  }
-                 board.set(row,col, new Piece(type, color));
+
+
+
+
+                 board.set(row,indexCounter, new Piece(type, color));
+                 indexCounter++;
              }
          }
+
+         // Now then turn store
+        if(playerTurn.trim().equals("w")){
+            turn = Piece.Color.WHITE;
+        }else{
+            turn = Piece.Color.BLACK;
+        }
+
+
+        // casting rights
+        castlingRights = 0b0000;
+        if(!casting.equals("-")) {
+            for (int i = 0; i < casting.length(); i++) {
+                switch (casting.charAt(i)) {
+                    case 'K' -> castlingRights = (castlingRights | 0b0001);
+                    case 'Q' -> castlingRights = (castlingRights | 0b0010);
+                    case 'k' -> castlingRights = (castlingRights | 0b0100);
+                    case 'q' -> castlingRights = (castlingRights | 0b1000);
+                    default -> {// do nothing
+                    }
+                }
+            }
+        }
+
+
+        // en passant square
+        if(!en_passantSquare.trim().equals("-")){
+            char file = en_passantSquare.charAt(0);
+            char rank = en_passantSquare.charAt(1);
+
+            enPassantCol = file - 'a';
+            enPassantRow = 8 -(rank - '0');
+        }else{
+            enPassantRow = -1;
+            enPassantCol = -1;
+        }
+    }
+
+    public boolean isDigit(char p){
+        return switch (p){
+             case '1','2','3','4','5','6','7','8' ->  true;
+             default -> false;
+         };
+
     }
 }

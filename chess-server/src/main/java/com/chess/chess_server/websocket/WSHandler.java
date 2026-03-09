@@ -87,26 +87,14 @@ public class WSHandler extends TextWebSocketHandler {
         List<WebSocketSession> players = room.getPlayer();
 
 
-        // room full
-        if (players.size() >= 2) {
-            session.sendMessage(new TextMessage("ROOM_FULL"));
-            return;
-        }
-
-
         // In case of reconnection
         if(room.isPlayerDisconnected && room.isGameActive() && room.playerDiconnected != null){
             room.disconnectTask.cancel(false);    //false if not running  --> then only task will stop
-                                                                    // true if running      --> then  if task is already started then interrupt it and stop it
-                                                                    // half updates are possible so --> miss Behaviour
+            // true if running     --> then  if task is already started then interrupt it and stop it
+            // half updates are possible so --> miss Behaviour
             // notify opponent that player reconnected
-             msgToOpponent(session, "OPPONENT_RECONNECTED");
-
-
-
-
-
-
+            msgToOpponent(session, room,"OPPONENT_RECONNECTED");
+            session.sendMessage(new TextMessage("JOINED_BACK"));
 
             // send game state FEN
             // turn                     --> done
@@ -122,6 +110,13 @@ public class WSHandler extends TextWebSocketHandler {
             S_room.put(session,roomId);
 
 
+            session.sendMessage(new TextMessage("BOARD_POSITION:"+room.getState().CreateFEN()));
+            session.sendMessage(new TextMessage("TURN:" + turn));
+            session.sendMessage(new TextMessage("YourSide:"+playerColor));
+            session.sendMessage(new TextMessage("OPPONENT_NAME:" + OpponentName));
+
+
+
             // update flags
             room.playerDiconnected = null;
             room.isPlayerDisconnected = false;
@@ -134,6 +129,13 @@ public class WSHandler extends TextWebSocketHandler {
 
             return;
         }
+
+        // room full
+        if (players.size() >= 2) {
+            session.sendMessage(new TextMessage("ROOM_FULL"));
+            return;
+        }
+
 
 
         // join room
@@ -340,7 +342,9 @@ public class WSHandler extends TextWebSocketHandler {
 
                  for(WebSocketSession player : players){
                          try {
-                             player.sendMessage(new TextMessage(moveStr));
+                             if(player.isOpen()) {
+                                 player.sendMessage(new TextMessage(moveStr));
+                             }
                          }catch (Exception e){
                              System.out.println("send failed : " +player.getId());
                              e.printStackTrace();
@@ -382,7 +386,7 @@ public class WSHandler extends TextWebSocketHandler {
 
         if(room.isGameActive()){
             // notify other player.
-            msgToOpponent(session,"OPPONENT_DISCONNECTED");
+            msgToOpponent(session, room,"OPPONENT_DISCONNECTED");
 
             room.isPlayerDisconnected =true;
             room.playerDiconnected = session;
@@ -521,7 +525,7 @@ public class WSHandler extends TextWebSocketHandler {
 
                 removeDisconnected(session);
             }
-        },60, TimeUnit.SECONDS);
+        },180, TimeUnit.SECONDS);
     }
 
     public void  declareOpponentWinner(WebSocketSession session,Room room){
@@ -539,18 +543,18 @@ public class WSHandler extends TextWebSocketHandler {
          }
     }
 
-    public void msgToOpponent(WebSocketSession sender, String opponentToMsg){
-      String RoomId = S_room.get(sender);
-      Room room = rooms.get(RoomId);
-      List<WebSocketSession> players = room.getPlayer();
-      if(players.size() ==1) return;
-      WebSocketSession opponent = (players.get(0) == sender) ? players.get(1) : players.get(0);
-      try{
-          opponent.sendMessage(new TextMessage(opponentToMsg));
-      }catch (Exception e){
-          System.out.println("failed to sent mst to opponent!");
-      }
-    }
+    public void msgToOpponent(WebSocketSession sender, Room room, String opponentToMsg) {
+
+            List<WebSocketSession> players = room.getPlayer();
+            if (players.size() == 1) return;
+            WebSocketSession opponent = (players.get(0) == sender) ? players.get(1) : players.get(0);
+            try {
+                opponent.sendMessage(new TextMessage(opponentToMsg));
+            } catch (Exception e) {
+                System.out.println("failed to sent mst to opponent!");
+            }
+        }
+
 
 
 }

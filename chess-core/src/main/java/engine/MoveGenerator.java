@@ -501,7 +501,7 @@ public class MoveGenerator {
               }
 
               // for o-o-o
-              if((state.board.get(fromRow,fromCol  -4) != null)){
+              if((state.board.get(fromRow,fromCol -4) != null)){
                   if(!state.black_queen_side_rook_move  &&  (state.board.get(fromRow,fromCol  -4).type == Piece.Type.ROOK)  && (state.board.get(fromRow,fromCol -4).color == Piece.Color.BLACK )   ){  // Queen side rook not moved
                   if(state.board.isEmpty(fromRow,fromCol-1)     &&    state.board.isEmpty(fromRow,fromCol-2)  &&     state.board.isEmpty(fromRow,fromCol-3) ){  // btw squares is empty
                       // checks king under attack  && passing square under attack  && final square under attack
