@@ -27,7 +27,15 @@ public class ChessApp extends Application {
                    menuWindow.boardLayout.chessboard.flipper();
                 }
             if(e.getCode() == KeyCode.getKeyCode("C")){
-                System.out.println( menuWindow.boardLayout.chessboard.controller.state.CreateFEN());
+                String fen1 = menuWindow.boardLayout.chessboard.controller.state.CreateFEN();
+                menuWindow.boardLayout.chessboard.controller.state.ReCreateBoard(fen1);
+                String fen2 = menuWindow.boardLayout.chessboard.controller.state.CreateFEN();
+
+
+                System.out.println("fen1 == fen2 :" + fen1.equals(fen2) );
+                System.out.println("fen1: " + fen1);
+                System.out.println("fen2: " + fen2);
+
             }
         });
         stage.setTitle("Chess_In_fx");

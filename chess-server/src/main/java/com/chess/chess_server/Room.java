@@ -21,7 +21,7 @@ public class Room {
     public WebSocketSession white = null;
     public  WebSocketSession black = null;
 
-    public WebSocketSession playerDiconnected;
+    public WebSocketSession playerDisconnected;
     public boolean isPlayerDisconnected;
     public boolean isPlayerReconnected;
     public  ScheduledFuture<?> disconnectTask ;

@@ -44,35 +44,37 @@ public class UIController {
         System.out.println("server --> " + msg);
 
         Platform.runLater(()->{
-        if(msg.startsWith("MOVE:")){
-          Move move = state.strToMove(msg);
-          state.ApplyMove(move);
-          boardLayout.chessboard.EndingSetUp();
-        } else if (msg.equals("JOINED")) {
-           networkManager.send("NAME:" + firstPerson);
-        }else if (msg.startsWith("YourSide:")) {
-            String color = msg.substring(9);
+
+            if (msg.equals("JOINED")) {
+                networkManager.send("NAME:" + firstPerson);
+            }
+            else if (msg.equals("START_GAME")  || msg.equals("JOINED_BACK") ){
+                // start Game
+                 multiplayerMode = true;
+                if(msg.equals("START_GAME")) {
+                      startFreshGame(true);
+                }else{
+                     startFreshGame(false);
+                }
+
+            }else if (msg.startsWith("YourSide:")) {
+                 String color = msg.substring(9);
             switch (color){
                 case "WHITE" -> playerColor = Color.WHITE;
                 case "BLACK" -> playerColor = Color.BLACK;
                 case "FATE_DECIDE" -> playerColor = Color.FATE_DECIDE;
             }
-        }else if (msg.equals("READY_TO_GO")) {
-            roomStatus = RoomStatus.READY_TO_GO;
-            boardLayout.joinRoomLayer.startBtn.setDisable(false);
-            boardLayout.joinRoomLayer.colorFlipperBtn.setDisable(false);
-        }else if(msg.startsWith("OPPONENT_NAME:")){
-            secondPerson = msg.substring(14);
-        }else if (msg.equals("START_GAME")  | msg.equals("JOINED_BACK") ){
-            // start Game
-            multiplayerMode = true;
-            if(msg.equals("START_GAME")) {
-                startFreshGame(true);
-            }else{
-                startFreshGame(false);
-            }
+            }else if (msg.equals("READY_TO_GO")){
+                 roomStatus = RoomStatus.READY_TO_GO;
+                 boardLayout.joinRoomLayer.startBtn.setDisable(false);
+                 boardLayout.joinRoomLayer.colorFlipperBtn.setDisable(false);
+             }else if(msg.startsWith("OPPONENT_NAME:")){
+                 secondPerson = msg.substring(14);
+             }else if(msg.startsWith("MOVE:")){
+                 Move move = state.strToMove(msg);
+                 state.ApplyMove(move);
 
-        } else if(msg.equals("REMATCH") ){
+            } else if(msg.equals("REMATCH")){
             boardLayout.chessboard.EndLayer.setVisible(false);
             boardLayout.chessboard.EndLayer.setMouseTransparent(true);
             state.reset();
@@ -99,7 +101,10 @@ public class UIController {
             boardLayout.joinRoomLayer.colorFlipperBtn.setDisable(true);
 
         }else if(msg.startsWith("BOARD_POSITION:")){
-            state.ReCreateBoard(msg.substring(16));
+            state.ReCreateBoard(msg.substring(16).trim());
+        }else if(msg.startsWith("OPPONENT_LEFT_YOU_WON")){
+                boardLayout.chessboard.EndLayer.newGame.setDisable(true);
+                boardLayout.chessboard.EndingSetUp(true);
         }
             boardLayout.joinRoomLayer.updateUI();
             boardLayout.chessboard.ClearHighlights();
@@ -118,7 +123,6 @@ public class UIController {
             state.reset();
         }
         boardLayout.screenManager.show(boardLayout);
-        System.out.println("ScreenManager...");
     }
     public void GoBackTOMenuWindow(){
         state.InRoom =false;

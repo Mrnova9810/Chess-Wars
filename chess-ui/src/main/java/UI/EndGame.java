@@ -110,6 +110,12 @@ public class EndGame extends StackPane {
                 case DRAW ->{
                     title.setText("DRAW");
                     result.setText(REASON);
+                }case BLACK_WINS-> {
+                    result.setText("BLACK WINS");
+                    title.setText("MATCH ABORTED");
+                }case WHITE_WINS -> {
+                    result.setText("WHITE WINS");
+                    title.setText("MATCH ABORTED");
                 }
             }
         }

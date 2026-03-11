@@ -119,7 +119,6 @@ public class BoardView extends StackPane {
 
                       // promotion check and show layer
                       m.promotion = (controller.state.isPawnReachLastRow(m));
-                      System.out.println("promotion : " + m.promotion);
                       if (m.promotion){
                           promotionOverLay(m);
                           return ;  //stop here if promotion
@@ -167,7 +166,7 @@ public class BoardView extends StackPane {
 
         }else{
             controller.state.ApplyMove(m);
-            EndingSetUp();
+            EndingSetUp(false);
 
 
             ClearHighlights();
@@ -176,9 +175,20 @@ public class BoardView extends StackPane {
     }
 
 
-    public void EndingSetUp(){
+    public void EndingSetUp( boolean timeOutWin){
+
         controller.state.currentStatues = controller.state.GameStatus(controller.state.turn);
         if (controller.state.currentStatues != GameState.states.CONTINUE) {
+            EndLayer.finalCenterBox(controller.state.currentStatues, controller.state.REASON);
+        }
+
+        if(timeOutWin){
+            if(controller.playerColor == UIController.Color.WHITE){
+                controller.state.currentStatues = GameState.states.WHITE_WINS;
+            }else{
+                controller.state.currentStatues = GameState.states.BLACK_WINS;
+            }
+            controller.state.REASON = "MATCH ABORTED";
             EndLayer.finalCenterBox(controller.state.currentStatues, controller.state.REASON);
         }
     }
@@ -250,7 +260,7 @@ public class BoardView extends StackPane {
                 ImageView imageView = new ImageView(imageLoader.PieceImage.get(color + "_" + type + "_" + side ));
 
                 imageView.setFitWidth(TILE_SIZE  * 0.85);
-                imageView.setFitHeight(TILE_SIZE *0.85);
+                imageView.setFitHeight(TILE_SIZE * 0.85);
                 imageView.setPreserveRatio(true);
 
                 squares[vr][vc].getChildren().add(imageView);

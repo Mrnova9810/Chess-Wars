@@ -395,6 +395,8 @@ public class MoveGenerator {
         List<Move> moves = new ArrayList<>();
           Piece king = state.board.get(fromRow,fromCol);
 
+          if(fromRow != 4) return moves;
+
           int toRow;
           int toCol;
 

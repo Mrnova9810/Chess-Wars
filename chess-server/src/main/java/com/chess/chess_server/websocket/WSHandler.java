@@ -88,12 +88,32 @@ public class WSHandler extends TextWebSocketHandler {
 
 
         // In case of reconnection
-        if(room.isPlayerDisconnected && room.isGameActive() && room.playerDiconnected != null){
+        if(room.isPlayerDisconnected && room.isGameActive() && room.playerDisconnected != null){
+            room.isPlayerReconnected =true;
             room.disconnectTask.cancel(false);    //false if not running  --> then only task will stop
             // true if running     --> then  if task is already started then interrupt it and stop it
             // half updates are possible so --> miss Behaviour
             // notify opponent that player reconnected
-            msgToOpponent(session, room,"OPPONENT_RECONNECTED");
+
+            System.out.println( "White:" + room.white);
+            System.out.println( "Black:" + room.black);
+            System.out.println("playerDisconnected:" + room.playerDisconnected);
+
+
+
+           if(room.playerDisconnected == room.white){
+               if(room.black != null && room.black.isOpen()){
+                   room.black.sendMessage(new TextMessage("OPPONENT_RECONNECTED"));
+               }
+           }else{
+               if(room.white !=null && room.white.isOpen()){
+                   room.white.sendMessage(new TextMessage("OPPONENT_RECONNECTED"));
+               }
+           }
+
+
+
+
             session.sendMessage(new TextMessage("JOINED_BACK"));
 
             // send game state FEN
@@ -101,12 +121,17 @@ public class WSHandler extends TextWebSocketHandler {
             // player color             --> done
             // opponent name            --> done
             // remove old session with new session id  --> done
-            String OpponentName = (room.playerDiconnected == room.white) ? room.playersName.get(room.black) : room.playersName.get(room.white);
-            String playerColor = (room.playerDiconnected == room.white) ? "WHITE" : "BLACK";
+            String OpponentName = (room.playerDisconnected == room.white) ? room.playersName.get(room.black) : room.playersName.get(room.white);
+            String playerColor = (room.playerDisconnected == room.white) ? "WHITE" : "BLACK";
+            if(playerColor.equals("WHITE") ){
+                room.white = session;
+            } else {
+                room.black = session;
+            }
             Piece.Color turn = room.getState().turn;
-            players.remove(room.playerDiconnected);
+            players.remove(room.playerDisconnected);
             players.add(session);
-            S_room.remove(room.playerDiconnected);
+            S_room.remove(room.playerDisconnected);
             S_room.put(session,roomId);
 
 
@@ -118,14 +143,9 @@ public class WSHandler extends TextWebSocketHandler {
 
 
             // update flags
-            room.playerDiconnected = null;
+            room.playerDisconnected = null;
             room.isPlayerDisconnected = false;
-            room.isPlayerReconnected =true;
 
-
-
-            if(playerColor.equals("WHITE")) room.white = session;
-            else room.black = session;
 
             return;
         }
@@ -178,13 +198,14 @@ public class WSHandler extends TextWebSocketHandler {
         // 2. is room have one player / 2 ??
 
         Room room =  rooms.get(roomID);
-        GameState state = room.getState();
+        if(room == null ) return;
         List<WebSocketSession> players =  rooms.get(roomID).getPlayer();
         if(players == null) return;
+        GameState state = room.getState();
 
         // if 1 --> inform the sender about this.
 
-        if(msg.startsWith("LEAVE_ROOM")    || msg.startsWith("EXIT_ROOM")){
+        if(msg.startsWith("LEAVE_ROOM")  || msg.startsWith("EXIT_ROOM")){
             room.white = null;
             room.black = null;
             room.startRequest = 0;
@@ -225,10 +246,9 @@ public class WSHandler extends TextWebSocketHandler {
 
         if(msg.startsWith("NAME:")){
             room.playersName.put(sender,msg.substring(5));
-            WebSocketSession receiver;
+
             if(players.size() == 2){
-                if(!(sender == players.get(0)))receiver = players.get(0);
-                else receiver = players.get(1);
+                WebSocketSession receiver = (sender == players.get(0))?  players.get(1) : players.get(0);
                 sender.sendMessage(new TextMessage("OPPONENT_NAME:" + room.playersName.get(receiver)));
                 receiver.sendMessage(new TextMessage("OPPONENT_NAME:" + room.playersName.get(sender)));
             }
@@ -295,6 +315,10 @@ public class WSHandler extends TextWebSocketHandler {
                              int p2 = (p1 == 1) ? 0 : 1;
                              players.get(p1).sendMessage(new TextMessage("YourSide:WHITE"));
                              players.get(p2).sendMessage(new TextMessage("YourSide:BLACK"));
+                             room.white = players.get(p1);
+                             room.black = players.get(p2);
+
+
                          }
 
                          for (WebSocketSession player : players) {
@@ -375,13 +399,12 @@ public class WSHandler extends TextWebSocketHandler {
          //-->remove it from room
 
     @Override
-    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+    public synchronized void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         String roomID = S_room.get(session);
         System.out.println("Disconnected:" + session.getId());
 
         if(roomID == null) return;
         Room room = rooms.get(roomID);
-        List<WebSocketSession>  players = room.getPlayer();
 
 
         if(room.isGameActive()){
@@ -389,7 +412,7 @@ public class WSHandler extends TextWebSocketHandler {
             msgToOpponent(session, room,"OPPONENT_DISCONNECTED");
 
             room.isPlayerDisconnected =true;
-            room.playerDiconnected = session;
+            room.playerDisconnected = session;
             room.isPlayerReconnected = false;
             handleDisconnection(session);
             return;
@@ -520,12 +543,13 @@ public class WSHandler extends TextWebSocketHandler {
             if(!room.isPlayerReconnected){
                 declareOpponentWinner(session,room);
                 // then remove the player from room
+                System.out.println("scheduler time RUN OUT!");
                 room.isPlayerDisconnected =false;
-                room.playerDiconnected =null;
+                room.playerDisconnected =null;
 
                 removeDisconnected(session);
             }
-        },180, TimeUnit.SECONDS);
+        },60, TimeUnit.SECONDS);
     }
 
     public void  declareOpponentWinner(WebSocketSession session,Room room){
@@ -537,6 +561,7 @@ public class WSHandler extends TextWebSocketHandler {
                  room.startRequest =  0;
                  room.RematchRequests = 0;
                  opponent.sendMessage(new TextMessage("OPPONENT_LEFT_YOU_WON"));
+                 System.out.println("OTHER PLAYER WINS");
              }
          }catch (Exception e){
              e.printStackTrace();
@@ -546,17 +571,15 @@ public class WSHandler extends TextWebSocketHandler {
     public void msgToOpponent(WebSocketSession sender, Room room, String opponentToMsg) {
 
             List<WebSocketSession> players = room.getPlayer();
-            if (players.size() == 1) return;
+            if (players.size() <2 ) return;
             WebSocketSession opponent = (players.get(0) == sender) ? players.get(1) : players.get(0);
-            try {
-                opponent.sendMessage(new TextMessage(opponentToMsg));
+            try {  if(opponent.isOpen()) {
+                opponent.sendMessage(new TextMessage(opponentToMsg));}
             } catch (Exception e) {
+                e.printStackTrace();
                 System.out.println("failed to sent mst to opponent!");
             }
         }
-
-
-
 }
 
 

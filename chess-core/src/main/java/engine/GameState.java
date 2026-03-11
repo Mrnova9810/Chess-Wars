@@ -7,7 +7,7 @@ import java.util.Objects;
 
 public class GameState {
 
-    public enum  states{CHECKMATE_BLACK_WINS, CHECKMATE_WHITE_WINS,DRAW, CONTINUE }
+    public enum  states{CHECKMATE_BLACK_WINS, CHECKMATE_WHITE_WINS, WHITE_WINS, BLACK_WINS,DRAW, CONTINUE }
 
     public Map<Long, Integer> repetitionCount = new HashMap<>();
 
@@ -822,12 +822,17 @@ public class GameState {
                      }
                  }
 
-                 // end spaces
-                 if(col == 7  && countSpace != 0){
-                     FEN.append(countSpace);
-                 }
+
                  if(col == 7 && row != 7){
+                     if(countSpace !=0){
+                         FEN.append(countSpace);
+                     }
                      FEN.append("/");
+                     countSpace =0;
+                 }else if(col ==7 && row == 7){
+                     if(countSpace != 0){
+                         FEN.append(countSpace);
+                     }
                  }
 
              }
@@ -969,10 +974,13 @@ public class GameState {
                  }
 
 
-
-
-                 board.set(row,indexCounter, new Piece(type, color));
-                 indexCounter++;
+                  if(indexCounter < 8 && indexCounter >= 0) {
+                      board.set(row, indexCounter, new Piece(type, color));
+                      indexCounter++;
+                  }else{
+                      System.out.println("indexCounter: "+indexCounter);
+                      throw  new IllegalArgumentException("INVALID FEN row overflow");
+                  }
              }
          }
 
