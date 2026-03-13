@@ -158,8 +158,8 @@ public class BoardView extends StackPane {
     }
 
     public  void ApplyMoveInUI(Move m){
-        if(controller.multiplayerMode) {
 
+        if(controller.multiplayerMode) {
             // in multiplayer pass to network
             System.out.println("move req: "+controller.state.convertInString(m));
             controller.networkManager.send("MOVE:"+ controller.state.convertInString(m));
@@ -167,7 +167,9 @@ public class BoardView extends StackPane {
         }else{
             controller.state.ApplyMove(m);
             EndingSetUp(false);
-
+            System.out.println("Move: " + controller.state.convertInString(m));
+            String fen1 = controller.state.createFEN();
+            System.out.println("fen1: " + fen1);
 
             ClearHighlights();
             drawPieces();

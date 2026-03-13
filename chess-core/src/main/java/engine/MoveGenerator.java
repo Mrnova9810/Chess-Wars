@@ -395,7 +395,11 @@ public class MoveGenerator {
         List<Move> moves = new ArrayList<>();
           Piece king = state.board.get(fromRow,fromCol);
 
-          if(fromRow != 4) return moves;
+          if(fromCol != 4) return moves;
+          if(state.castlingRights == 0) return moves;
+
+          if(king.color == Piece.Color.WHITE  && fromRow !=7) return moves;
+          if(king.color == Piece.Color.BLACK && fromRow !=0) return  moves;
 
           int toRow;
           int toCol;
@@ -428,94 +432,88 @@ public class MoveGenerator {
 
 
           if(king.color == Piece.Color.WHITE){   // white
-              if(state.white_king_move) return moves;    // return null move
-              // not moved then
+              if(!((state.castlingRights & 0b0011) == 0)){    // return null move
+                  // not moved then
+                  // for o-o
+                  if (state.board.get(fromRow, fromCol + 3) != null) {
+                      if (((state.castlingRights & 0b0001) != 0) && (state.board.get(fromRow, fromCol + 3).type == Piece.Type.ROOK) && (state.board.get(fromRow, fromCol + 3).color == Piece.Color.WHITE)) {   // rook not moved then king side
+                          if (state.board.isEmpty(fromRow, fromCol + 1) && state.board.isEmpty(fromRow, fromCol + 2)) {  // both are empty
+                              // checks king under attack  && passing square under attack  && final square under attack
+                              if (!(isSquareAttacked(state, Piece.Color.BLACK, fromRow, fromCol)
+                                      || isSquareAttacked(state, Piece.Color.BLACK, fromRow, fromCol + 1)
+                                      || isSquareAttacked(state, Piece.Color.BLACK, fromRow, fromCol + 2))) {
+                                  // after all rules satisfies then add  castling move
+                                  toRow = fromRow;
+                                  toCol = fromCol + 2;
+                                  moves.add(new Move(fromRow, fromCol, toRow, toCol, true));
 
 
-              // for o-o
-              if(state.board.get(fromRow,fromCol + 3) != null ){
-              if(!state.white_king_side_rook_move  &&  (state.board.get(fromRow,fromCol + 3).type == Piece.Type.ROOK)  && (state.board.get(fromRow,fromCol + 3).color == Piece.Color.WHITE )) {   // rook not moved then king side
-                              if (state.board.isEmpty(fromRow, fromCol + 1) && state.board.isEmpty(fromRow, fromCol + 2)) {  // both are empty
-                                   // checks king under attack  && passing square under attack  && final square under attack
-                                   if (!(isSquareAttacked(state, Piece.Color.BLACK, fromRow, fromCol)
-                                         || isSquareAttacked(state, Piece.Color.BLACK, fromRow, fromCol + 1)
-                                         || isSquareAttacked(state, Piece.Color.BLACK, fromRow, fromCol + 2))){
-                                      // after all rules satisfies then add  castling move
-                                       toRow = fromRow;
-                                       toCol =  fromCol + 2;
-                                       moves.add(new Move(fromRow,fromCol, toRow,toCol,true));
-
-
-                                   }
                               }
+                          }
 
-              }}
+                      }
+                  }
 
-              // for o-o-o
-              if(state.board.get(fromRow,fromCol  -4) != null) {
-                  if (!state.white_queen_side_rook_move && (state.board.get(fromRow, fromCol - 4).type == Piece.Type.ROOK) && (state.board.get(fromRow, fromCol - 4).color == Piece.Color.WHITE)) {  // Queen side rook not moved
-                      if (state.board.isEmpty(fromRow, fromCol - 1) && state.board.isEmpty(fromRow, fromCol - 2) && state.board.isEmpty(fromRow, fromCol - 3)) {  // btw squares is empty
-                          // checks king under attack  && passing square under attack  && final square under attack
-                          if (!(isSquareAttacked(state, Piece.Color.BLACK, fromRow, fromCol)
-                                  || isSquareAttacked(state, Piece.Color.BLACK, fromRow, fromCol - 1)
-                                  || isSquareAttacked(state, Piece.Color.BLACK, fromRow, fromCol - 2))) {
-                              // after all rules satisfies then add  castling move
-                              toRow = fromRow;
-                              toCol = fromCol + -2;
-                              moves.add(new Move(fromRow, fromCol, toRow, toCol, true));
+                  // for o-o-o
+                  if (state.board.get(fromRow, fromCol - 4) != null) {
+                      if (((state.castlingRights & 0b0010) != 0) && (state.board.get(fromRow, fromCol - 4).type == Piece.Type.ROOK) && (state.board.get(fromRow, fromCol - 4).color == Piece.Color.WHITE)) {  // Queen side rook not moved
+                          if (state.board.isEmpty(fromRow, fromCol - 1) && state.board.isEmpty(fromRow, fromCol - 2) && state.board.isEmpty(fromRow, fromCol - 3)) {  // btw squares is empty
+                              // checks king under attack  && passing square under attack  && final square under attack
+                              if (!(isSquareAttacked(state, Piece.Color.BLACK, fromRow, fromCol)
+                                      || isSquareAttacked(state, Piece.Color.BLACK, fromRow, fromCol - 1)
+                                      || isSquareAttacked(state, Piece.Color.BLACK, fromRow, fromCol - 2))) {
+                                  // after all rules satisfies then add  castling move
+                                  toRow = fromRow;
+                                  toCol = fromCol - 2;
+                                  moves.add(new Move(fromRow, fromCol, toRow, toCol, true));
 
+                              }
                           }
                       }
                   }
               }
-
-
-
-
-
-
-
           }else {  // black
+              if (!((state.castlingRights & 0b0011) == 0)) {    // return null move
 
-              if(state.black_king_move) return moves;    // return null move
-              // not moved then
+                  // not moved then
 
 
-              // for o-o
-              if((state.board.get(fromRow,fromCol + 3) !=null)){
-              if(!state.black_king_side_rook_move &&  (state.board.get(fromRow,fromCol + 3).type == Piece.Type.ROOK)  && (state.board.get(fromRow,fromCol + 3).color == Piece.Color.BLACK )) {   // rook not moved then king side
-                  if (state.board.isEmpty(fromRow, fromCol + 1) && state.board.isEmpty(fromRow, fromCol + 2)) {  // both are empty
-                      // checks king under attack  && passing square under attack  && final square under attack
-                      if (!(isSquareAttacked(state, Piece.Color.WHITE, fromRow, fromCol)
-                           ||  isSquareAttacked(state, Piece.Color.WHITE, fromRow, fromCol + 1)
-                           ||  isSquareAttacked(state, Piece.Color.WHITE, fromRow, fromCol + 2))){
+                  // for o-o
+                  if ((state.board.get(fromRow, fromCol + 3) != null)) {
+                      if (((state.castlingRights & 0b0100) != 0) && (state.board.get(fromRow, fromCol + 3).type == Piece.Type.ROOK) && (state.board.get(fromRow, fromCol + 3).color == Piece.Color.BLACK)) {   // rook not moved then king side
+                          if (state.board.isEmpty(fromRow, fromCol + 1) && state.board.isEmpty(fromRow, fromCol + 2)) {  // both are empty
+                              // checks king under attack  && passing square under attack  && final square under attack
+                              if (!(isSquareAttacked(state, Piece.Color.WHITE, fromRow, fromCol)
+                                      || isSquareAttacked(state, Piece.Color.WHITE, fromRow, fromCol + 1)
+                                      || isSquareAttacked(state, Piece.Color.WHITE, fromRow, fromCol + 2))) {
 
-                          // after all rules satisfies then add  castling move
-                          toRow = fromRow;
-                          toCol =  fromCol + 2;
-                          moves.add(new Move(fromRow,fromCol, toRow,toCol,true));
+                                  // after all rules satisfies then add  castling move
+                                  toRow = fromRow;
+                                  toCol = fromCol + 2;
+                                  moves.add(new Move(fromRow, fromCol, toRow, toCol, true));
 
+
+                              }
+                          }
 
                       }
                   }
 
-              }
-              }
-
-              // for o-o-o
-              if((state.board.get(fromRow,fromCol -4) != null)){
-                  if(!state.black_queen_side_rook_move  &&  (state.board.get(fromRow,fromCol  -4).type == Piece.Type.ROOK)  && (state.board.get(fromRow,fromCol -4).color == Piece.Color.BLACK )   ){  // Queen side rook not moved
-                  if(state.board.isEmpty(fromRow,fromCol-1)     &&    state.board.isEmpty(fromRow,fromCol-2)  &&     state.board.isEmpty(fromRow,fromCol-3) ){  // btw squares is empty
-                      // checks king under attack  && passing square under attack  && final square under attack
-                      if(!(   isSquareAttacked(state,Piece.Color.WHITE,fromRow,fromCol)
-                             || isSquareAttacked(state,Piece.Color.WHITE,fromRow,fromCol-1)
-                             || isSquareAttacked(state,Piece.Color.WHITE,fromRow,fromCol-2))){
-                          // after all rules satisfies then add  castling move
-                          toRow = fromRow;
-                          toCol =  fromCol - 2;
-                          moves.add(new Move(fromRow,fromCol, toRow,toCol,true));
+                  // for o-o-o
+                  if ((state.board.get(fromRow, fromCol - 4) != null)) {
+                      if (((state.castlingRights & 0b1000) != 0) && (state.board.get(fromRow, fromCol - 4).type == Piece.Type.ROOK) && (state.board.get(fromRow, fromCol - 4).color == Piece.Color.BLACK)) {  // Queen side rook not moved
+                          if (state.board.isEmpty(fromRow, fromCol - 1) && state.board.isEmpty(fromRow, fromCol - 2) && state.board.isEmpty(fromRow, fromCol - 3)) {  // btw squares is empty
+                              // checks king under attack  && passing square under attack  && final square under attack
+                              if (!(isSquareAttacked(state, Piece.Color.WHITE, fromRow, fromCol)
+                                      || isSquareAttacked(state, Piece.Color.WHITE, fromRow, fromCol - 1)
+                                      || isSquareAttacked(state, Piece.Color.WHITE, fromRow, fromCol - 2))) {
+                                  // after all rules satisfies then add  castling move
+                                  toRow = fromRow;
+                                  toCol = fromCol - 2;
+                                  moves.add(new Move(fromRow, fromCol, toRow, toCol, true));
+                              }
+                          }
                       }
-                  }
                   }
               }
           }
@@ -721,7 +719,6 @@ public class MoveGenerator {
 
         return false;
     }
-
     public boolean isInBoundary(int row , int col){
         return row >= 0 && row <= 7 && col >= 0 && col <= 7;
     }

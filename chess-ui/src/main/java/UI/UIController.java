@@ -101,7 +101,7 @@ public class UIController {
             boardLayout.joinRoomLayer.colorFlipperBtn.setDisable(true);
 
         }else if(msg.startsWith("BOARD_POSITION:")){
-            state.ReCreateBoard(msg.substring(16).trim());
+            state.ReCreateBoard(msg.substring(15).trim());
         }else if(msg.startsWith("OPPONENT_LEFT_YOU_WON")){
                 boardLayout.chessboard.EndLayer.newGame.setDisable(true);
                 boardLayout.chessboard.EndingSetUp(true);

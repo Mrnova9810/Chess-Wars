@@ -28,11 +28,7 @@ public class Move {
 
 
     Piece CapturePiece;
-     Piece.Color turnOf;
-
-    // save flags store past values
-    boolean wk,wks,wqs;
-    boolean bk,bks,bqs;
+    Piece.Color turnOf;
 
 
 

@@ -135,7 +135,7 @@ public class WSHandler extends TextWebSocketHandler {
             S_room.put(session,roomId);
 
 
-            session.sendMessage(new TextMessage("BOARD_POSITION:"+room.getState().CreateFEN()));
+            session.sendMessage(new TextMessage("BOARD_POSITION:"+room.getState().createFEN()));
             session.sendMessage(new TextMessage("TURN:" + turn));
             session.sendMessage(new TextMessage("YourSide:"+playerColor));
             session.sendMessage(new TextMessage("OPPONENT_NAME:" + OpponentName));

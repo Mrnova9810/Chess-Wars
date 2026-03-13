@@ -3,7 +3,6 @@ package engine;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 public class GameState {
 
@@ -39,13 +38,7 @@ public class GameState {
         turn = (turn == Piece.Color.WHITE)? Piece.Color.BLACK : Piece.Color.WHITE;
     }
 
-     boolean white_king_move = false;
-     boolean white_king_side_rook_move= false;
-     boolean white_queen_side_rook_move=false;
 
-     boolean black_king_move =  false;
-     boolean black_king_side_rook_move = false;
-     boolean black_queen_side_rook_move = false;
 
 
      public GameState(){
@@ -86,19 +79,11 @@ public class GameState {
         // flag what was before
 
 
-        // flag rest
-        white_king_move = move.wk;
-        white_king_side_rook_move = move.wks;
-        white_queen_side_rook_move = move.wqs;
-
-        black_king_move = move.bk;
-        black_king_side_rook_move = move.bks;
-        black_queen_side_rook_move = move.bqs;
-
         // turn revers
         turn = move.turnOf;
         enPassantRow =move.prevEnPassantRow;
         enPassantCol = move.prevEnPassantCol;
+        castlingRights = move.PrevCastlingRight;
 
 
 
@@ -172,13 +157,6 @@ public class GameState {
         move.prevEnPassantRow= enPassantRow;
         move.prevEnPassantCol = enPassantCol;
 
-        move.wk = white_king_move;
-        move.wks = white_king_side_rook_move;
-        move.wqs = white_queen_side_rook_move;
-
-        move.bk = black_king_move;
-        move.bks = black_king_side_rook_move;
-        move.bqs = black_queen_side_rook_move;
 
 
 
@@ -194,16 +172,6 @@ public class GameState {
 
        // at ToRow, ToCol check for piece? if it's rook then update flags.
        move.CapturePiece =  board.get(move.toRow,move.toCol);
-
-       if( move.CapturePiece != null &&  move.CapturePiece.type == Piece.Type.ROOK){
-          if(move.CapturePiece.color == Piece.Color.WHITE){
-              if( move.toRow == 7 && move.toCol == 0) white_queen_side_rook_move = true;
-              if (move.toRow == 7 && move.toCol == 7) white_king_side_rook_move = true;
-          }else {
-              if( move.toRow == 0 && move.toCol == 0) black_queen_side_rook_move = true;
-              if (move.toRow == 0 && move.toCol == 7) black_king_side_rook_move = true;
-          }
-       }
 
         // en-passant
         if(p.type == Piece.Type.PAWN) {
@@ -231,37 +199,6 @@ public class GameState {
 
 
 
-       // flags updates
-       if (p.type == Piece.Type.KING) {   // King
-           if (p.color == Piece.Color.WHITE && !white_king_move) {
-               white_king_move = true;
-           } else if (p.color == Piece.Color.BLACK && !black_king_move) {
-               black_king_move = true;
-           }
-       }
-
-       if (p.type == Piece.Type.ROOK) {  // Rook
-           if (p.color == Piece.Color.WHITE) {
-               // King side rook
-               if (move.fromCol == 7 && move.fromRow == 7) {
-                   white_king_side_rook_move = true;
-               }
-               // Queen side Rook
-               if (move.fromCol == 0 && move.fromRow == 7) {
-                   white_queen_side_rook_move = true;
-               }
-           } else {
-               if (move.fromCol == 7 && move.fromRow == 0) {
-                   black_king_side_rook_move = true;
-               }
-               // Queen side Rook
-               if (move.fromCol == 0 && move.fromRow == 0) {
-                   black_queen_side_rook_move = true;
-
-               }
-           }
-       }
-
 
 
            // castling --> true
@@ -273,13 +210,6 @@ public class GameState {
            if (move.Castling) {// white side     || black
                    if (move.toCol > move.fromCol) {    // king side
 
-                       if(move.fromRow == 7){
-                           white_king_side_rook_move = true;
-                       } else if (move.fromRow == 0){
-                           black_king_side_rook_move = true;
-                       }
-
-
                        //_K_  __ __ _R_ stating  --> __ __ _K_  _R_ in btw  --> __ _R_ _K_ __ final after castling
                     Piece Rook = board.get(move.fromRow, move.fromCol + 3);
                     board.set(move.fromRow,move.fromCol + 1, Rook);           // set rook
@@ -290,12 +220,6 @@ public class GameState {
 
                    } else { // Queen Side castling
                        //  _R_  __  __  __ _K_   --> _R_  __ _K_  __  -->   __  __  _K_  _R_
-
-                       if(move.fromRow == 7){
-                           white_queen_side_rook_move = true;
-                       } else if (move.fromRow == 0){
-                           black_queen_side_rook_move = true;
-                       }
 
                        Piece Rook = board.get(move.fromRow, move.fromCol - 4);
                        board.set(move.fromRow, move.fromCol - 1, Rook);
@@ -561,14 +485,6 @@ public class GameState {
          // castling right
          castlingRights = 0b1111;
 
-         // flags
-         white_king_move = false;
-         white_king_side_rook_move = false;
-         white_queen_side_rook_move = false;
-         black_king_move = false;
-         black_king_side_rook_move = false;
-         black_queen_side_rook_move = false;
-
          enPassantCol =-1;
          enPassantRow =-1;
          zobristHash =0;
@@ -708,7 +624,7 @@ public class GameState {
     }
 
 
-    public String CreateFEN(){
+    public String createFEN(){
          StringBuilder FEN = new StringBuilder();
 
          // add board pieces location
@@ -891,7 +807,6 @@ public class GameState {
 
          String[] Rank  =  boardPosition.split("/");
 
-
          // clear board pieces
         for(int row = 0; row <=7; row++){
             for (int col= 0; col <=7;col++){
@@ -902,83 +817,26 @@ public class GameState {
 
 
          for (int row = 0; row <= 7; row++){
-             int indexCounter = 0;
+             int boardCol = 0;
+             for (int fenIndex = 0; fenIndex < Rank[row].length() ;fenIndex++){
+                 char p = Rank[row].charAt(fenIndex);
 
-             for (int col = 0; col < Rank[row].length() ;col++){
-                 char p = Rank[row].charAt(col);
-                 Piece.Type type;
-                 Piece.Color color;
                 // if( p.)   p is number then...?
-
                  if(isDigit(p)){
                      int emptySpace = p -'0';
-                     indexCounter += emptySpace;
+                     boardCol += emptySpace;
                      continue;
                  }
 
                  // Pieces
-                 switch (p){
-                     case 'P' -> {
-                         type = Piece.Type.PAWN;
-                         color = Piece.Color.WHITE;
-                     }
-                     case 'R' -> {
-                         type = Piece.Type.ROOK;
-                         color = Piece.Color.WHITE;
-                     }
-                     case 'N' -> {
-                         type = Piece.Type.KNIGHT;
-                         color = Piece.Color.WHITE;
-                     }
-                     case 'B' -> {
-                         type = Piece.Type.BISHOP;
-                         color = Piece.Color.WHITE;
-                     }
-                     case 'K' -> {
-                         type = Piece.Type.KING;
-                         color = Piece.Color.WHITE;
-                     }case 'Q' -> {
-                         type = Piece.Type.QUEEN;
-                         color = Piece.Color.WHITE;
-                     }
-                     case 'p' -> {
-                         type = Piece.Type.PAWN;
-                         color = Piece.Color.BLACK;
-                     }
-                     case 'r' -> {
-                         type = Piece.Type.ROOK;
-                         color = Piece.Color.BLACK;
-                     }
-                     case 'n' -> {
-                         type = Piece.Type.KNIGHT;
-                         color = Piece.Color.BLACK;
-                     }
-                     case 'b' -> {
-                         type = Piece.Type.BISHOP;
-                         color = Piece.Color.BLACK;
-                     }
-                     case 'k' -> {
-                         type = Piece.Type.KING;
-                         color = Piece.Color.BLACK;
-                     }
-                     case 'q' -> {
-                         type = Piece.Type.QUEEN;
-                         color = Piece.Color.BLACK;
-                     }
-                     default -> {
-                         throw new IllegalArgumentException("Invalid FEN piece: " + p);
-                     }
+                 Piece piece = pieceFromChar(p);
+                 board.set(row, boardCol, piece);
+                 boardCol++;
 
 
 
-                 }
-
-
-                  if(indexCounter < 8 && indexCounter >= 0) {
-                      board.set(row, indexCounter, new Piece(type, color));
-                      indexCounter++;
-                  }else{
-                      System.out.println("indexCounter: "+indexCounter);
+                  if( boardCol > 8){
+                      System.out.println("boardCol: "+boardCol);
                       throw  new IllegalArgumentException("INVALID FEN row overflow");
                   }
              }
@@ -1027,5 +885,67 @@ public class GameState {
              default -> false;
          };
 
+    }
+
+
+    public Piece pieceFromChar(char p){
+        Piece.Type type;
+        Piece.Color color;
+        switch (p){
+            case 'P' -> {
+                type = Piece.Type.PAWN;
+                color = Piece.Color.WHITE;
+            }
+            case 'R' -> {
+                type = Piece.Type.ROOK;
+                color = Piece.Color.WHITE;
+            }
+            case 'N' -> {
+                type = Piece.Type.KNIGHT;
+                color = Piece.Color.WHITE;
+            }
+            case 'B' -> {
+                type = Piece.Type.BISHOP;
+                color = Piece.Color.WHITE;
+            }
+            case 'K' -> {
+                type = Piece.Type.KING;
+                color = Piece.Color.WHITE;
+            }case 'Q' -> {
+                type = Piece.Type.QUEEN;
+                color = Piece.Color.WHITE;
+            }
+            case 'p' -> {
+                type = Piece.Type.PAWN;
+                color = Piece.Color.BLACK;
+            }
+            case 'r' -> {
+                type = Piece.Type.ROOK;
+                color = Piece.Color.BLACK;
+            }
+            case 'n' -> {
+                type = Piece.Type.KNIGHT;
+                color = Piece.Color.BLACK;
+            }
+            case 'b' -> {
+                type = Piece.Type.BISHOP;
+                color = Piece.Color.BLACK;
+            }
+            case 'k' -> {
+                type = Piece.Type.KING;
+                color = Piece.Color.BLACK;
+            }
+            case 'q' -> {
+                type = Piece.Type.QUEEN;
+                color = Piece.Color.BLACK;
+            }
+            default -> {
+                throw new IllegalArgumentException("Invalid FEN piece: " + p);
+            }
+
+
+
+        }
+        return new Piece(type,color);
     }
 }
