@@ -123,6 +123,7 @@ public class UIController {
             state.reset();
         }
         boardLayout.screenManager.show(boardLayout);
+        boardLayout.chessboard.drawPieces();
     }
     public void GoBackTOMenuWindow(){
         state.InRoom =false;

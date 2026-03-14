@@ -126,9 +126,6 @@ public class BoardView extends StackPane {
 
                       ApplyMoveInUI(m);
 
-
-
-
                       selectedRow = -1;
                       selectedCol = -1;
 

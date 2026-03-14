@@ -153,6 +153,7 @@ public class EndGame extends StackPane {
         exist.setOnAction(e->{
 
             //music / treads stop it here later
+            boardView.controller.boardLayout.joinRoomLayer.menuWindow.setAnimation();
             state.reset();
             this.setVisible(false);
             this.setMouseTransparent(true);

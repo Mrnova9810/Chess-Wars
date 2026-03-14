@@ -478,7 +478,7 @@ public class GameState {
     public void reset(){
 
         //set board to starting position
-        bordRest();
+        boardRest();
         turn = Piece.Color.WHITE;
 
 
@@ -497,10 +497,9 @@ public class GameState {
          repetitionCount.put(zobristHash, 1);
          // hash set to zero --> initialize to starting state-> after
          currentStatues = states.CONTINUE;
-
     }
 
-    public  void bordRest(){
+    public  void boardRest(){
          // clear board
          for (int row = 0; row < 8; row++){
              for(int col= 0; col <8;col++){

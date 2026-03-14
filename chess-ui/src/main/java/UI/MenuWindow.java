@@ -116,9 +116,7 @@ public class MenuWindow  extends StackPane {
                 """);
 
         mainLayer.setVisible(true);
-
         CreateMainPane();
-
         this.getChildren().addAll(backGround, mainLayer, floatingText, joiningRoomLayer);
 
      }
@@ -164,21 +162,22 @@ public class MenuWindow  extends StackPane {
           VBox PlayerVsPlayer = CreateCardModes( passByPass, "Player vs Player ");
 
           PlayerVsPlayer.setOnMouseClicked(e->{
+              animationStopper();
               boardLayout.chessboard.controller.startFreshGame(true);
           });
           VBox multiplayer   = CreateCardModes(multiplayerImage, "Multi player match");
 
 
           multiplayer.setOnMouseClicked(e->{
-              animationStopper();
-                 if(!boardLayout.chessboard.controller.state.InRoom) {
+                 if(!boardLayout.chessboard.controller.state.InRoom){
+                     animationStopper();
                      joiningRoomLayer.ShowJoinRoomPop();
                  }else{
+                     animationStopper();
                      joiningRoomLayer.createControlPanel(boardLayout.chessboard.controller.state.RoomID);
                  }
 
           });
-
 
 
 
@@ -288,7 +287,6 @@ public class MenuWindow  extends StackPane {
      }
 
      public void addAnimation(){
-
          // vedio resolution : width: 640  , height: 360
          media = new Media(getClass().getResource("/video/animation.mp4").toExternalForm());
          mediaPlayer = new MediaPlayer(media);
@@ -306,7 +304,6 @@ public class MenuWindow  extends StackPane {
          mediaView.setFitHeight(360);
          mediaView.setPreserveRatio(true);
 
-
          // center animation
          Animation.setPrefSize(640,360);
          Animation.setMaxSize(640,360);
@@ -318,17 +315,10 @@ public class MenuWindow  extends StackPane {
                  -fx-border-width:  2;
                  
                  """);
-
-
-
          Animation.getChildren().add(mediaView);
          centerBlock.setAlignment(Pos.CENTER);
          centerBlock.getChildren().add(Animation);
-
-
          mainLayer.setCenter(centerBlock);
-
-
      }
 
 
@@ -341,32 +331,4 @@ public class MenuWindow  extends StackPane {
          mediaPlayer.play();
          centerBlock.getChildren().add(Animation);
      }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }

@@ -208,6 +208,7 @@ boolean showTextArea = false;
 
         CreateRoom.setOnAction(e->{
             if(!yourNameArea.getText().isEmpty()){
+                menuWindow.setAnimation();
                 menuWindow.boardLayout.chessboard.controller.firstPerson = yourNameArea.getText();
             }else return;
 
@@ -251,13 +252,12 @@ boolean showTextArea = false;
 
                 if(!yourNameArea.getText().isEmpty()){
                     menuWindow.boardLayout.chessboard.controller.firstPerson = yourNameArea.getText();
+                    menuWindow.setAnimation();
                 }else return;
-
 
                 menuWindow.boardLayout.chessboard.controller.state.RoomID = RoomIdTextArea.getText();
                 menuWindow.boardLayout.chessboard.controller.state.InRoom = true;
                 menuWindow.boardLayout.chessboard.controller.networkManager.send("JOIN:" +menuWindow.boardLayout.chessboard.controller.state.RoomID);
-
 
 
                 menuWindow.TopRight.getChildren().clear();
@@ -433,6 +433,7 @@ boolean showTextArea = false;
         });
         leaveRoomBtn = new Button("Leave");
         leaveRoomBtn.setOnAction(e->{
+            menuWindow.setAnimation();
             menuWindow.boardLayout.chessboard.controller.state.InRoom =false;
             menuWindow.boardLayout.chessboard.controller.state.RoomID ="";
             joinReqSended = false;
