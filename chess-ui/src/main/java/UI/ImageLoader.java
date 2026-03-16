@@ -8,12 +8,16 @@ import java.util.Map;
 public class ImageLoader {
 
 
+    enum Style{BASIC_STYLE , CUTE_STYLE}
 
+    Style currentStyle = Style.CUTE_STYLE;
 
     public  final Map<String , Image> PieceImage = new HashMap<>();
 
-    public ImageLoader(){
 
+
+
+    public ImageLoader(){
         String[] colors = {"white", "black"};
         String[] type = {"pawn", "rook", "knight", "bishop", "king", "queen" };
         String[] sides = {"front","back"};
@@ -27,6 +31,17 @@ public class ImageLoader {
                   }
             }
         }
+
+        for(String color : colors){
+            for (String ty: type) {
+                String key  = color + "_" + ty;
+                PieceImage.put(key ,new Image(getClass().getResourceAsStream("/basic_pieces/"+key+ ".png")));
+            }
+        }
+
+
+
+
 
 
 

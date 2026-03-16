@@ -21,6 +21,9 @@ public class UIController {
 
     public enum RoomStatus{ IN_WAITING, READY_TO_GO}
     public enum Color{ WHITE, BLACK, FATE_DECIDE}
+    public enum Connection {CONNECTED, DISCONNECTED, RECONNECTED}
+
+    public Connection opponentConnection;
 
     public Color playerColor = Color.FATE_DECIDE;
 
@@ -53,6 +56,8 @@ public class UIController {
                  multiplayerMode = true;
                 if(msg.equals("START_GAME")) {
                       startFreshGame(true);
+                      boardLayout.showTurn(state.turn);
+
                 }else{
                      startFreshGame(false);
                 }
@@ -65,6 +70,7 @@ public class UIController {
                 case "FATE_DECIDE" -> playerColor = Color.FATE_DECIDE;
             }
             }else if (msg.equals("READY_TO_GO")){
+                 opponentConnection = Connection.CONNECTED;
                  roomStatus = RoomStatus.READY_TO_GO;
                  boardLayout.joinRoomLayer.startBtn.setDisable(false);
                  boardLayout.joinRoomLayer.colorFlipperBtn.setDisable(false);
@@ -73,6 +79,7 @@ public class UIController {
              }else if(msg.startsWith("MOVE:")){
                  Move move = state.strToMove(msg);
                  state.ApplyMove(move);
+                 boardLayout.showTurn(state.turn);
 
             } else if(msg.equals("REMATCH")){
             boardLayout.chessboard.EndLayer.setVisible(false);
@@ -81,11 +88,12 @@ public class UIController {
             boardLayout.chessboard.drawPieces();
 
         }else if (msg.equals("OPPONENT_LEFT_FROM_THIS_ROOM")) {
+
             // show OpponentLeft...
             // start timer...
+            secondPerson = "[ ________ ]";
             roomStatus = RoomStatus.IN_WAITING;
             boardLayout.joinRoomLayer.joinReqSended = false;
-            secondPerson = "[ ________ ]";
             playerColor = Color.FATE_DECIDE;
             boardLayout.joinRoomLayer.startBtn.setText("READY");
             boardLayout.joinRoomLayer.startBtn.setDisable(true);
@@ -95,17 +103,29 @@ public class UIController {
             boardLayout.chessboard.EndLayer.newGame.setDisable(false);
             roomStatus = RoomStatus.IN_WAITING;
             secondPerson = "[ ________ ]";
+
             playerColor = Color.FATE_DECIDE;
             boardLayout.joinRoomLayer.startBtn.setText("READY");
             boardLayout.joinRoomLayer.startBtn.setDisable(true);
             boardLayout.joinRoomLayer.colorFlipperBtn.setDisable(true);
 
-        }else if(msg.startsWith("BOARD_POSITION:")){
+
+        }else if (msg.startsWith("OPPONENT_DISCONNECTED")) {
+                opponentConnection = Connection.DISCONNECTED;
+                boardLayout.updateLabel();
+
+            }
+            else if(msg.startsWith("BOARD_POSITION:")){
             state.ReCreateBoard(msg.substring(15).trim());
+            boardLayout.showTurn(state.turn);
         }else if(msg.startsWith("OPPONENT_LEFT_YOU_WON")){
                 boardLayout.chessboard.EndLayer.newGame.setDisable(true);
                 boardLayout.chessboard.EndingSetUp(true);
-        }
+        } else if (msg.startsWith("OPPONENT_RECONNECTED")) {
+                opponentConnection = Connection.RECONNECTED;
+                boardLayout.updateLabel();
+
+            }
             boardLayout.joinRoomLayer.updateUI();
             boardLayout.chessboard.ClearHighlights();
             boardLayout.chessboard.drawPieces();
@@ -122,6 +142,7 @@ public class UIController {
         if(refresh) {
             state.reset();
         }
+        boardLayout.updateLabel();
         boardLayout.screenManager.show(boardLayout);
         boardLayout.chessboard.drawPieces();
     }

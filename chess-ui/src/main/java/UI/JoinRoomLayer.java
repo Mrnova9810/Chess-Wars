@@ -1,21 +1,26 @@
 package UI;
 
+import javafx.animation.PauseTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Cursor;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+
 import javafx.scene.layout.*;
 
 import java.util.Random;
 
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
+import javafx.util.Duration;
 
 
-
-
-public class JoinRoomLayer extends Pane {
+public class JoinRoomLayer extends BorderPane {
 
 MenuWindow menuWindow;
+StackPane centerContainer;
 VBox middleLayer;
 
 
@@ -92,12 +97,12 @@ boolean showTextArea = false;
                -fx-background-color: rgba(0,0,0,0.6);
                """);
         // center part
-        middleLayer  = new VBox(20);
+        middleLayer  = new VBox(19);
+        centerContainer = new StackPane();
 
         middleLayer.setPadding(new Insets(80,100,100,80));
-        middleLayer.setPrefSize(550,400);
-        middleLayer.setLayoutX(380);
-        middleLayer.setLayoutY(80);
+        middleLayer.setMaxSize(550,400);
+
 
         middleLayer.setStyle("""
               -fx-background-color: #050505;
@@ -106,8 +111,9 @@ boolean showTextArea = false;
               -fx-border-color: white;
               -fx-background-radius : 20;
               -fx-effect: dropshadow(gaussian,#148a99,20,0.4,0,0);
+            
               """);
-
+        middleLayer.setTranslateY(-80);
 
 
         // for joining room components
@@ -146,13 +152,18 @@ boolean showTextArea = false;
 
 
 
+        roomCodeLabel.setCursor(Cursor.HAND);
+        roomCodeLabel.setOnMouseClicked(e->{
+            Clipboard clipboard = Clipboard.getSystemClipboard();
+            javafx.scene.input.ClipboardContent content = new ClipboardContent();
+            content.putString(menuWindow.boardLayout.chessboard.controller.state.RoomID);
+            clipboard.setContent(content);
+            roomCodeLabel.setText("Room ID    : " +"Copied!");
 
-      
-
-
-
-
-
+            PauseTransition  pause = new PauseTransition(Duration.seconds(3));
+            pause.setOnFinished(x->   roomCodeLabel.setText("Room ID    : " + menuWindow.boardLayout.chessboard.controller.state.RoomID));
+            pause.play();
+        });
 
 
 
@@ -162,9 +173,9 @@ boolean showTextArea = false;
 
 
 
-
-
-        this.getChildren().add(middleLayer);
+        centerContainer.setAlignment(Pos.CENTER);
+        centerContainer.getChildren().add(middleLayer);
+        this.setCenter(centerContainer);
 
     }
 
@@ -207,10 +218,7 @@ boolean showTextArea = false;
         middleLayer.getChildren().addAll(joinRoomBox, nameBox, CreateRoom,textBox);
 
         CreateRoom.setOnAction(e->{
-            if(!yourNameArea.getText().isEmpty()){
-                menuWindow.setAnimation();
-                menuWindow.boardLayout.chessboard.controller.firstPerson = yourNameArea.getText();
-            }else return;
+            if(yourNameArea.getText().isEmpty()) return;
 
             //  we gonna passing  we generate room for random number--> room id
             // pass that number to sever that will create room and store it uses.
@@ -222,6 +230,8 @@ boolean showTextArea = false;
 
         // dummy id
 
+        menuWindow.setAnimation();
+        menuWindow.boardLayout.chessboard.controller.firstPerson = yourNameArea.getText();
         menuWindow.boardLayout.chessboard.controller.state.RoomID =  generateCode();
         menuWindow.boardLayout.chessboard.controller.networkManager.send("JOIN:" +menuWindow.boardLayout.chessboard.controller.state.RoomID);
         menuWindow.boardLayout.chessboard.controller.state.InRoom = true;
@@ -250,15 +260,13 @@ boolean showTextArea = false;
                  // check from server room exist or not.
                  // if exist
 
-                if(!yourNameArea.getText().isEmpty()){
-                    menuWindow.boardLayout.chessboard.controller.firstPerson = yourNameArea.getText();
-                    menuWindow.setAnimation();
-                }else return;
+                if(yourNameArea.getText().isEmpty()) return;
 
+                menuWindow.boardLayout.chessboard.controller.firstPerson = yourNameArea.getText();
+                menuWindow.setAnimation();
                 menuWindow.boardLayout.chessboard.controller.state.RoomID = RoomIdTextArea.getText();
                 menuWindow.boardLayout.chessboard.controller.state.InRoom = true;
                 menuWindow.boardLayout.chessboard.controller.networkManager.send("JOIN:" +menuWindow.boardLayout.chessboard.controller.state.RoomID);
-
 
                 menuWindow.TopRight.getChildren().clear();
                 menuWindow.TopRight.getChildren().add(RightTopbar(menuWindow.boardLayout.chessboard.controller.state.InRoom, menuWindow.boardLayout.chessboard.controller.state.RoomID));
@@ -365,17 +373,23 @@ boolean showTextArea = false;
         titleBox.setAlignment(Pos.TOP_CENTER);     // in side there children will go to be aligned to center
 
 
-
-        statusLabel.setText("Status : " + menuWindow.boardLayout.chessboard.controller.roomStatus);
-        roomCodeLabel.setText("Room ID: " + roomCode );
+        if(menuWindow.boardLayout.chessboard.controller.roomStatus == UIController.RoomStatus.IN_WAITING) {
+            statusLabel.setText("Status        : " + "Waiting for player");
+        }else{
+            statusLabel.setText("Status        : " + "Ready to go");
+        }
+        roomCodeLabel.setText("Room ID    : " + roomCode );
         matchLabel.setText("Match B/W: "+   menuWindow.boardLayout.chessboard.controller.firstPerson + " Vs " + menuWindow.boardLayout.chessboard.controller.secondPerson);
 
         // color choosing btn flipper
         // left & right side
          ColorBox.setAlignment(Pos.BASELINE_LEFT);
 
-         yourColorLabel .setText("YourColor : " + menuWindow.boardLayout.chessboard.controller.playerColor);
-         colorFlipperBtn.setMinSize(60,20);
+         if (menuWindow.boardLayout.chessboard.controller.playerColor == UIController.Color.WHITE) yourColorLabel.setText("Your Color : " + "White");
+         else if (menuWindow.boardLayout.chessboard.controller.playerColor == UIController.Color.BLACK) yourColorLabel.setText("Your Color : " + "black");
+         else yourColorLabel.setText("Your Color : " + "Random");
+
+        colorFlipperBtn.setMinSize(60,20);
 
 
          ColorBox.getChildren().addAll(yourColorLabel,space,colorFlipperBtn);
@@ -399,7 +413,7 @@ boolean showTextArea = false;
 
 
 
-        inputTimerLabel.setText("Set Timer :");
+        inputTimerLabel.setText("Set Timer   :  ");
 
         ClockInputBOX = new HBox();
         ClockInputBOX.getChildren().addAll(inputTimerLabel , inputTime_in_mins);
@@ -419,8 +433,7 @@ boolean showTextArea = false;
 
         // start & leave btn
         startBtn = new Button("Ready");
-        if(menuWindow.boardLayout.chessboard.controller.roomStatus == UIController.RoomStatus.IN_WAITING){startBtn.setDisable(true);}
-        else {startBtn.setDisable(false);}
+        startBtn.setDisable(menuWindow.boardLayout.chessboard.controller.roomStatus == UIController.RoomStatus.IN_WAITING);
 
 
         startBtn.setOnAction(e->{
@@ -480,13 +493,16 @@ boolean showTextArea = false;
 
     public void updateUI() {
         matchLabel.setText("Match B/W: "+   menuWindow.boardLayout.chessboard.controller.firstPerson + " Vs " + menuWindow.boardLayout.chessboard.controller.secondPerson);
-        statusLabel.setText("Status : " + menuWindow.boardLayout.chessboard.controller.roomStatus);
-        roomCodeLabel.setText("Room ID: " + menuWindow.boardLayout.chessboard.controller.state.RoomID);
-
-        yourColorLabel.setText("Selected Side:" +menuWindow.boardLayout.chessboard.controller.playerColor);
+        if(menuWindow.boardLayout.chessboard.controller.roomStatus == UIController.RoomStatus.IN_WAITING) {
+            statusLabel.setText("Status        : " + "Waiting for player");
+        }else{
+            statusLabel.setText("Status        : " + "Ready to go");
+        }
+        roomCodeLabel.setText("Room ID    : " + menuWindow.boardLayout.chessboard.controller.state.RoomID);
         switch ( menuWindow.boardLayout.chessboard.controller.playerColor) {
             case WHITE:
-                //colorFlipperBtn.setText("WHITE");
+                yourColorLabel.setText("Your Color : " + "White");
+
                 colorFlipperBtn.setStyle("""
                         -fx-background-color: white;
                         -fx-border-color: #00f5ff;
@@ -495,7 +511,8 @@ boolean showTextArea = false;
                 break;
 
             case BLACK:
-                //colorFlipperBtn.setText("BLACK");
+                yourColorLabel.setText("Your Color : " + "Black");
+
                 colorFlipperBtn.setStyle("""
                         -fx-background-color: black;
                         -fx-border-color: #00f5ff;
@@ -503,7 +520,7 @@ boolean showTextArea = false;
                 break;
 
             case FATE_DECIDE:
-                //colorFlipperBtn.setText("RANDOM");
+                yourColorLabel.setText("Your Color : " + "Random");
                 colorFlipperBtn.setStyle("""
                          -fx-background-color: gray;
                          -fx-border-color: #00f5ff;

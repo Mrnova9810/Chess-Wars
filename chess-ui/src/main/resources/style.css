@@ -8,6 +8,10 @@
  -fx-front-size:18px;
 }
 
+.boardBackGround{
+-fx-background-color:#2a2024;
+}
+
 
 .neon-button:hover {
   -fx-background-color :rgba(0,245,255,0.08);

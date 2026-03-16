@@ -2,26 +2,33 @@ package UI;
 
 
 
-import javafx.geometry.Insets;
+import engine.Piece;
+
+
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
-import javafx.scene.effect.Glow;
+
 import javafx.scene.layout.*;
-import javafx.stage.Stage;
+
 
 
 public class BoardLayout extends BorderPane {
 
     BoardView chessboard;
-    Glow glow = new Glow(0.4);
     StackPane centerWrapper;
     StackPane centerContainer;
 
-    int sidesHeight;
-    int sideWeight;
+    // #52221f
 
     JoinRoomLayer joinRoomLayer;
     ScreenManager screenManager;
+    Label topLabel;
+    Label bottomLabel;
+
+    Region topSpace;
+    Region bottomSpace;
+
+
 
 
 
@@ -45,6 +52,7 @@ public class BoardLayout extends BorderPane {
 
 
        setCenter(centerContainer);
+
 
        borders();
     }
@@ -73,57 +81,54 @@ public class BoardLayout extends BorderPane {
         VBox rightUI;
 
 
+        topSpace = new Region();
+        bottomSpace = new Region();
 
 
         // Top
-          Label Player1 = new Label("black player[_____]");
-        Player1.setStyle("""
-                -fx-text-fill: white
+        topLabel = new Label();
+        topLabel.setStyle("""
+                -fx-text-fill: white;
                 """);
-        Player1.setEffect(glow);
+        topLabel.setTranslateX(80);
 
-          topUI = new HBox( 10 , Player1);
-          topUI.setAlignment(Pos.CENTER);
-          topUI.setPadding(new Insets(10));
-          topUI.setStyle("""
-                  -fx-background-color:#52221f;
-                  """);
+          topUI = new HBox( 10 , topSpace, topLabel);
+          topUI.setAlignment(Pos.CENTER_LEFT);
+          topUI.getStyleClass().add("boardBackGround");
 
         // bottom
-        Label Player2 = new Label("white player[_____]");
-        Player2.setStyle("""
-             
-                """);
+        bottomLabel = new Label();
+        bottomLabel.setStyle("""
+                 -fx-text-fill :  white;
+                 """);
 
-        Player2.setEffect(glow);
+        bottomUI = new HBox( 10 ,bottomSpace, bottomLabel);
+        bottomUI.setAlignment(Pos.TOP_LEFT);
+
+        bottomUI.getStyleClass().add("boardBackGround");
+
+        topSpace.prefWidthProperty().bind(topUI.widthProperty().multiply(0.02));
+        bottomSpace.prefWidthProperty().bind(bottomUI.widthProperty().multiply(0.02));
 
 
-        bottomUI = new HBox( 10 , Player2);
-        bottomUI.setAlignment(Pos.CENTER);
-        bottomUI.setPadding(new Insets(10));
-        bottomUI.setStyle("""
-                  -fx-background-color: #52221f;
-                  """);
+
+
 
         topUI.prefHeightProperty().bind(heightProperty().subtract(centerWrapper.heightProperty()).divide(2));
         bottomUI.prefHeightProperty().bind(heightProperty().subtract(centerWrapper.heightProperty()).divide(2));
 
 
-
-
-
-
         // left
         leftUI = new VBox();
-
-        leftUI.setStyle("-fx-background-color: #52221f;");
+        leftUI.getStyleClass().add("boardBackGround");
 
 
 
         // right
         rightUI = new VBox();
+        rightUI.getStyleClass().add("boardBackGround");
 
-        rightUI.setStyle("-fx-background-color: #52221f;");
+        showTurn(Piece.Color.WHITE);
 
 
 
@@ -136,4 +141,135 @@ public class BoardLayout extends BorderPane {
         this.setLeft(leftUI);
         this.setRight(rightUI);
     }
-}
+
+    public void updateLabel(){
+        // based on POV and player color
+        // first name -> your
+        // second name -> opponent
+        if(chessboard.controller.multiplayerMode){
+
+
+            if(chessboard.controller.opponentConnection == UIController.Connection.CONNECTED) {
+                if (chessboard.controller.playerColor == UIController.Color.WHITE) {
+                    playerSideLabel().setText("White player[  " + chessboard.controller.firstPerson + "  ]");
+                    opponentSideLabel().setText("Black player[  " + chessboard.controller.secondPerson + "  ]");
+                } else {
+                    playerSideLabel().setText("Black player[  " + chessboard.controller.firstPerson + "  ]");
+                    opponentSideLabel().setText("White player[  " + chessboard.controller.secondPerson + "  ]");
+                }
+            } else if (chessboard.controller.opponentConnection == UIController.Connection.DISCONNECTED) {
+                if (chessboard.controller.playerColor == UIController.Color.WHITE) {
+                    playerSideLabel().setText("White player[  " + chessboard.controller.firstPerson + "  ]");
+                    opponentSideLabel().setText("Black player[  " + chessboard.controller.secondPerson + "  ] [ Disconnected  ❌]");
+                    opponentSideLabel().setStyle("""
+                             -fx-text-fill: ;
+                            """);
+                } else {
+                    playerSideLabel().setText("Black player[  " + chessboard.controller.firstPerson + "  ]");
+                    opponentSideLabel().setText("White player[  " + chessboard.controller.secondPerson + "  ] [ Disconnected  ❌]");
+                }
+            } else if (chessboard.controller.opponentConnection == UIController.Connection.RECONNECTED) {
+                if (chessboard.controller.playerColor == UIController.Color.WHITE){
+                    playerSideLabel().setText("White player[  " + chessboard.controller.firstPerson + "  ]");
+                    opponentSideLabel().setText("Black player[  " + chessboard.controller.secondPerson + "  ] [ Reconnected \uD83D\uDCF6]");
+                }else{
+                    playerSideLabel().setText("Black player[  " + chessboard.controller.firstPerson + "  ]");
+                    opponentSideLabel().setText("White player[  " + chessboard.controller.secondPerson + "  ] [ Reconnected \uD83D\uDCF6]");
+                }
+            }
+        }else{
+
+
+            if(chessboard.controller.CurrentPOV == UIController.POV.WHITE){
+                 topLabel.setText("Black player");
+                 bottomLabel.setText("White player");
+
+
+            }else{
+                System.out.println("POV : BLACK ha");
+                    topLabel.setText("White player");
+                    bottomLabel.setText("Black player");
+            }
+        }
+    }
+
+
+    public void showTurn(Piece.Color turn){
+        if(chessboard.controller.multiplayerMode && chessboard.controller.opponentConnection == UIController.Connection.DISCONNECTED) {
+            opponentSideLabel().setStyle("""
+                    -fx-text-fill: #8d3518;
+                    -fx-effect : null;
+                    """);
+            return;
+        }
+        if(turn == Piece.Color.WHITE){
+            if(chessboard.controller.CurrentPOV == UIController.POV.WHITE){
+                topLabel.setStyle("""
+                        -fx-text-fill: white;
+                        -fx-effect : null;
+                        """);
+                bottomLabel.setStyle("""
+                        -fx-text-fill: white;
+                        -fx-effect : dropshadow(gaussian,cyan,20,0.2,2,2);
+                        """);
+
+            }else{
+                topLabel.setStyle("""
+                        -fx-text-fill: white;
+                        -fx-effect : dropshadow(gaussian,cyan,20,0.2,2,2);
+                        """);
+                bottomLabel.setStyle("""
+                        -fx-text-fill: white;
+                        -fx-effect : null;
+                        """);
+
+
+            }
+        }else{
+            if(chessboard.controller.CurrentPOV == UIController.POV.WHITE){
+                topLabel.setStyle("""
+                        -fx-text-fill: white;
+                        -fx-effect : dropshadow(gaussian,cyan,20,0.2,2,2);
+                        """);
+                bottomLabel.setStyle("""
+                        -fx-text-fill: white;
+                        -fx-effect : null;
+                        """);
+            }else{
+                topLabel.setStyle("""
+                        -fx-text-fill: white;
+                        -fx-effect : null;
+                        """);
+                bottomLabel.setStyle("""
+                        -fx-text-fill: white;
+                        -fx-effect : dropshadow(gaussian,cyan,20,0.2,2,2);
+                        """);
+            }
+        }
+
+
+
+    }
+
+    public Label playerSideLabel(){
+        if(chessboard.controller.CurrentPOV == UIController.POV.WHITE){
+            if(chessboard.controller.playerColor == UIController.Color.WHITE) return bottomLabel;
+            else return topLabel;
+
+        }else{
+            if(chessboard.controller.playerColor == UIController.Color.WHITE) return topLabel;
+            else return bottomLabel;
+        }
+    }
+    public Label opponentSideLabel(){
+        if(chessboard.controller.CurrentPOV == UIController.POV.WHITE){
+            if(chessboard.controller.playerColor == UIController.Color.WHITE) return topLabel;
+            else return bottomLabel;
+
+        }else{
+            if(chessboard.controller.playerColor == UIController.Color.WHITE) return bottomLabel;
+            else return topLabel;
+        }
+    }
+
+    }

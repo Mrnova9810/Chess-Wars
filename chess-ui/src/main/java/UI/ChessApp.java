@@ -8,12 +8,12 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 
-import java.io.IOException;
+
 import java.util.Objects;
 
 public class ChessApp extends Application {
     @Override
-    public void start(Stage stage) throws IOException {
+    public void start(Stage stage) {
 
         StackPane root = new StackPane();
         Scene scene = new Scene(root, 1280,830);
@@ -23,15 +23,29 @@ public class ChessApp extends Application {
         switchScene.show(menuWindow);
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/style.css")).toExternalForm());
         scene.setOnKeyPressed( e ->{
-                if(e.getCode() == KeyCode.getKeyCode("F") ) {
+            if(e.getCode() == KeyCode.getKeyCode("F") ) {
                    menuWindow.boardLayout.chessboard.flipper();
-                }
-            if(e.getCode() == KeyCode.getKeyCode("C")){
+                   menuWindow.boardLayout.updateLabel();
+                   menuWindow.boardLayout.showTurn(menuWindow.boardLayout.chessboard.controller.state.turn);
+            }
+            if(e.getCode() == KeyCode.getKeyCode("P")){
                 String fen1 = menuWindow.boardLayout.chessboard.controller.state.createFEN();
                 System.out.println("fen1: " + fen1);
             }
+            if(e.getCode() == KeyCode.S){
+                // style and color change
+               menuWindow.boardLayout.chessboard.imageLoader.currentStyle = (  menuWindow.boardLayout.chessboard.imageLoader.currentStyle == ImageLoader.Style.BASIC_STYLE) ? ImageLoader.Style.CUTE_STYLE : ImageLoader.Style.BASIC_STYLE;
+               if(menuWindow.boardLayout.chessboard.imageLoader.currentStyle == ImageLoader.Style.CUTE_STYLE){
+                   menuWindow.boardLayout.chessboard.squareColorChanger(ImageLoader.Style.CUTE_STYLE);
+               }else{
+                   menuWindow.boardLayout.chessboard.squareColorChanger(ImageLoader.Style.BASIC_STYLE);
+               }
+               menuWindow.boardLayout.chessboard.drawPieces();
+            }if(e.getCode() == KeyCode.C){
+                menuWindow.boardLayout.chessboard.squareColorChanger(null);
+            }
         });
-        stage.setTitle("Chess_In_fx");
+        stage.setTitle("Chess");
         stage.setScene(scene);
         stage.show();
 

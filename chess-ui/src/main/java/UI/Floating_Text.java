@@ -2,6 +2,7 @@ package UI;
 
 import javafx.animation.AnimationTimer;
 import javafx.geometry.Point2D;
+import javafx.scene.effect.Glow;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -12,32 +13,38 @@ import java.util.List;
 
 public class Floating_Text extends Pane {
 
+
     List<LetterData> letters = new ArrayList<>();
-    int fontSize = 40;
-    int offset = 100;
+    int fontSize = 45;
+    int offset = 60;
     double width_of_word;
+    Font mainfont;
 
 
 
 
-    double startX = 400;
-    double startY = 60;
+
+
+    double startX = 480;
+    double startY = 65;
     double spacing = 40;
     double effective_radius = 100;
     double movingFactor = 10;
 
+    Glow glow = new Glow(0.4);
 
     Point2D mouse;
 
     public Floating_Text(String word){
         this.setStyle("-fx-background-color: transparent;");
+        mainfont = Font.loadFont(getClass().getResourceAsStream("/fonts/mainFont3.ttf"),fontSize);
         createLetters(word);
         animation();
     }
 
     public void createLetters(String word){
         Text text = new Text(word);
-        text.setFont(Font.font("MV Boli", fontSize));
+        text.setFont(mainfont);
         width_of_word = text.getLayoutBounds().getWidth();
 
 
@@ -52,8 +59,9 @@ public class Floating_Text extends Pane {
             for (int i = 0; i < word.length(); i++) {
                 String ch = String.valueOf(word.charAt(i));
                 Text t = new Text(ch);
-                t.setFont(Font.font("MV boli",fontSize));
-                t.setFill(Color.WHITE);
+                t.setFont(mainfont);
+                t.setFill(Color.web("#D6D6D6"));
+                t.setEffect(glow);
                 t.setSmooth(true);
 
                 double x = startX + i*spacing;

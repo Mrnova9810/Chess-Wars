@@ -95,9 +95,9 @@ public class WSHandler extends TextWebSocketHandler {
             // half updates are possible so --> miss Behaviour
             // notify opponent that player reconnected
 
-            System.out.println( "White:" + room.white);
-            System.out.println( "Black:" + room.black);
-            System.out.println("playerDisconnected:" + room.playerDisconnected);
+//            System.out.println( "White:" + room.white);
+//            System.out.println( "Black:" + room.black);
+//            System.out.println("playerDisconnected:" + room.playerDisconnected);
 
 
 
@@ -410,6 +410,16 @@ public class WSHandler extends TextWebSocketHandler {
         if(room.isGameActive()){
             // notify other player.
             msgToOpponent(session, room,"OPPONENT_DISCONNECTED");
+            // if other player already disconnected then
+            if(room.isPlayerDisconnected){
+
+                S_room.remove(session);
+                if(room.playerDisconnected != null){
+                    S_room.remove(room.playerDisconnected);
+                }
+                rooms.remove(roomID);
+            }
+
 
             room.isPlayerDisconnected =true;
             room.playerDisconnected = session;

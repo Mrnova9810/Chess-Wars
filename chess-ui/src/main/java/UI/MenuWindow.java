@@ -27,11 +27,11 @@ public class MenuWindow  extends StackPane {
     BoardLayout boardLayout;
 
 
-
      Glow glow = new Glow();
 
 
      // background
+
      Pane backGround;
      BorderPane mainLayer;
      StackPane centerBlock;
@@ -47,7 +47,7 @@ public class MenuWindow  extends StackPane {
 
      BorderPane topBar;
 
-     Pane settingLayer ;
+    // Pane settingLayer ;
      JoinRoomLayer joiningRoomLayer;// when clicked on multiplayer this appears
      VBox TopRight;
 
@@ -94,7 +94,7 @@ public class MenuWindow  extends StackPane {
         mainLayer = new BorderPane();
         Animation = new StackPane();
         centerBlock = new StackPane();
-        floatingText = new Floating_Text("Chess wars");
+        floatingText = new Floating_Text("CHESS WARS");
         this.setOnMouseMoved(e->{
             floatingText.updateMouse(e.getX(),e.getY());
         });
@@ -108,13 +108,12 @@ public class MenuWindow  extends StackPane {
 //        settingLayer.setMouseTransparent(true);
 //        settingLayer.setVisible(false);
 
-
-
+         // #fae4c3
+         // #011008
 
         backGround.setStyle("""
-                -fx-background-color:#011008;
+                -fx-background-color: #0a0009;
                 """);
-
         mainLayer.setVisible(true);
         CreateMainPane();
         this.getChildren().addAll(backGround, mainLayer, floatingText, joiningRoomLayer);
@@ -171,9 +170,11 @@ public class MenuWindow  extends StackPane {
           multiplayer.setOnMouseClicked(e->{
                  if(!boardLayout.chessboard.controller.state.InRoom){
                      animationStopper();
+                     joiningRoomLayer.middleLayer.setTranslateY(-90);
                      joiningRoomLayer.ShowJoinRoomPop();
                  }else{
                      animationStopper();
+                     joiningRoomLayer.middleLayer.setTranslateY(-80);
                      joiningRoomLayer.createControlPanel(boardLayout.chessboard.controller.state.RoomID);
                  }
 
@@ -273,17 +274,9 @@ public class MenuWindow  extends StackPane {
          modeType.setEffect(glow);
 
 
-
-          if(image != null){
-              modeImgSection.getChildren().add(image);
-              card.getChildren().addAll(modeImgSection,modeType);
-          }else {
-              modeImgSection.setStyle("""
-                      -fx-background-color: black;
-                      """);
-              card.getChildren().addAll(modeImgSection, modeType);
-          }
-          return card;
+         modeImgSection.getChildren().add(image);
+         card.getChildren().addAll(modeImgSection,modeType);
+         return card;
      }
 
      public void addAnimation(){

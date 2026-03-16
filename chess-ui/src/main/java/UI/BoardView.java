@@ -20,11 +20,12 @@ public class BoardView extends StackPane {
 
     public  static final  int SIZE = 8;
     public static final int TILE_SIZE = 90;
+    public  int colorChoice = 0;
+
+    private final Color[] light = {Color.BEIGE,Color.web("#EEEED2"), Color.web("#A0A0A0")};
+    private final Color[] dark  = {Color.SADDLEBROWN,Color.web("#769656"), Color.web("#404040")};
 
 
-
-    private final Color Light = Color.BEIGE;
-    private final   Color Dark = Color.SADDLEBROWN;
     private final Color FirstClickColor = Color.color(0.133, 0.161, 0.161, 1);
     private final Color optionsColor = Color.color(0.141, 0.949, 0.451, 1);
     private List<Move> highLightedMoves;
@@ -44,6 +45,7 @@ public class BoardView extends StackPane {
 
     ImageLoader imageLoader;
     UIController controller;
+    BoardLayout boardLayout;
 
 
 
@@ -54,6 +56,7 @@ public class BoardView extends StackPane {
         this.gridBoard.setMinSize(TILE_SIZE*SIZE,TILE_SIZE*SIZE);
 
         createPromotionLayer();
+        this.boardLayout = boardLayout;
         controller = new UIController(boardLayout);
 
         EndLayer= new EndGame(controller.state, this);
@@ -65,10 +68,6 @@ public class BoardView extends StackPane {
     }
 
 
-
-    public GridPane getGridBoard(){
-        return gridBoard;
-    }
     public void createBoard() {
         for (int col = 0; col < SIZE; col++) {
             for (int row = 0; row < SIZE; row++) {
@@ -77,19 +76,43 @@ public class BoardView extends StackPane {
                 square.setOnMouseClicked(e -> {
                     onSquareClick(square);
                 });
-
               square.setPrefSize(TILE_SIZE, TILE_SIZE);
 
-
-
                 boolean isLight = (row + col) % 2 == 0;
-                Color color = isLight ? Light : Dark;
+                Color color = isLight ?  light[colorChoice] : dark[colorChoice];
                 square.setBackground(new Background(new BackgroundFill(color, null, Insets.EMPTY)));
                 squares[row][col] = square;
                 gridBoard.add(square, col, row);
             }
         }
     }
+
+    public void squareColorChanger(ImageLoader.Style style){
+
+        if(style == ImageLoader.Style.CUTE_STYLE){
+            colorChoice = 0;
+        }else if(style == ImageLoader.Style.BASIC_STYLE){
+            colorChoice = 1;
+        }else{
+            if(colorChoice < 2) {
+                colorChoice++;
+            }else{
+                colorChoice = 0;
+            }
+        }
+
+        for (int col = 0; col < SIZE; col++) {
+            for (int row = 0; row < SIZE; row++) {
+              Square square = squares[row][col];
+
+                boolean isLight = (row + col) % 2 == 0;
+                Color color = isLight ? light[colorChoice] : dark[colorChoice];
+                square.setBackground(new Background(new BackgroundFill(color, null, Insets.EMPTY)));
+
+            }
+        }
+    }
+
 
     void onSquareClick(Square square){
         int engRow = controller.engRow(square.uiRow);
@@ -165,8 +188,9 @@ public class BoardView extends StackPane {
             controller.state.ApplyMove(m);
             EndingSetUp(false);
             System.out.println("Move: " + controller.state.convertInString(m));
-            String fen1 = controller.state.createFEN();
-            System.out.println("fen1: " + fen1);
+//            String fen1 = controller.state.createFEN();
+//            System.out.println("fen1: " + fen1);
+            boardLayout.showTurn(controller.state.turn);
 
             ClearHighlights();
             drawPieces();
@@ -256,10 +280,19 @@ public class BoardView extends StackPane {
                 String type = p.type.name().toLowerCase();
                 String side = controller.getImageSide(p);
 
-                ImageView imageView = new ImageView(imageLoader.PieceImage.get(color + "_" + type + "_" + side ));
-
-                imageView.setFitWidth(TILE_SIZE  * 0.85);
-                imageView.setFitHeight(TILE_SIZE * 0.85);
+                ImageView imageView;
+                if(imageLoader.currentStyle == ImageLoader.Style.CUTE_STYLE) {
+                     imageView = new ImageView(imageLoader.PieceImage.get(color + "_" + type + "_" + side));
+                }else{
+                    imageView = new ImageView(imageLoader.PieceImage.get(color + "_" + type));
+                }
+                if(imageLoader.currentStyle == ImageLoader.Style.CUTE_STYLE) {
+                    imageView.setFitWidth(TILE_SIZE * 0.85);
+                    imageView.setFitHeight(TILE_SIZE * 0.85);
+                }else{
+                    imageView.setFitWidth(TILE_SIZE * 0.75);
+                    imageView.setFitHeight(TILE_SIZE * 0.75);
+                }
                 imageView.setPreserveRatio(true);
 
                 squares[vr][vc].getChildren().add(imageView);
@@ -312,28 +345,59 @@ public class BoardView extends StackPane {
         promotionBox.setAlignment(Pos.CENTER);
         promotionBox.setMaxSize(300,300);
         Piece p = controller.state.board.get(m.fromRow, m.fromCol);
-        String basePath =p.color== Piece.Color.WHITE ? "/pieces/white_" : "/pieces/black_";
+        String basePath;
+        ImageView queen;
+        ImageView rook;
+        ImageView bishop;
+        ImageView knight;
+        if(imageLoader.currentStyle == ImageLoader.Style.CUTE_STYLE) {
+             basePath =p.color== Piece.Color.WHITE ? "/pieces/white_" : "/pieces/black_";
+             queen = new ImageView(new Image(getClass().getResourceAsStream(basePath + "queen_front.png")));
+             rook = new ImageView(new Image(getClass().getResourceAsStream(basePath + "rook_front.png")));
+             bishop = new ImageView(new Image(getClass().getResourceAsStream(basePath + "bishop_front.png")));
+             knight = new ImageView(new Image(getClass().getResourceAsStream(basePath + "knight_front.png")));
+            queen.setFitHeight(70);
+            queen.setFitWidth(70);
 
-        ImageView queen  = new ImageView(new Image(getClass().getResourceAsStream(basePath + "queen_front.png")));
-        ImageView rook   = new ImageView(new Image(getClass().getResourceAsStream(basePath + "rook_front.png")));
-        ImageView bishop = new ImageView(new Image(getClass().getResourceAsStream(basePath + "bishop_front.png")));
-        ImageView knight = new ImageView(new Image(getClass().getResourceAsStream(basePath + "knight_front.png")));
 
-        queen.setFitHeight(70);
-        queen.setFitWidth(70);
+            rook.setFitHeight(70);
+            rook.setFitWidth(70);
+
+
+
+            bishop.setFitHeight(70);
+            bishop.setFitWidth(70);
+
+
+            knight.setFitHeight(70);
+            knight.setFitWidth(70);
+
+
+        }else{
+            basePath = p.color== Piece.Color.WHITE ? "/basic_pieces/white_" : "/basic_pieces/black_";
+            queen = new ImageView(new Image(getClass().getResourceAsStream(basePath + "queen.png")));
+            rook = new ImageView(new Image(getClass().getResourceAsStream(basePath + "rook.png")));
+            bishop = new ImageView(new Image(getClass().getResourceAsStream(basePath + "bishop.png")));
+            knight = new ImageView(new Image(getClass().getResourceAsStream(basePath + "knight.png")));
+
+            queen.setFitHeight(60);
+            queen.setFitWidth(60);
+
+            rook.setFitHeight(60);
+            rook.setFitWidth(60);
+
+
+            bishop.setFitHeight(60);
+            bishop.setFitWidth(60);
+
+            knight.setFitHeight(60);
+            knight.setFitWidth(60);
+        }
+
+
         queen.setPreserveRatio(true);
-
-        rook.setFitHeight(70);
-        rook.setFitWidth(70);
         rook.setPreserveRatio(true);
-
-
-        bishop.setFitHeight(70);
-        bishop.setFitWidth(70);
         bishop.setPreserveRatio(true);
-
-        knight.setFitHeight(70);
-        knight.setFitWidth(70);
         knight.setPreserveRatio(true);
 
 

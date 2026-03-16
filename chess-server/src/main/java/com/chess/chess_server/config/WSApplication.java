@@ -15,7 +15,6 @@ public class WSApplication implements WebSocketConfigurer {
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        System.out.println("WSApplication loaded");
                registry.addHandler(new WSHandler(),"/chess").setAllowedOrigins("*");
 
 
