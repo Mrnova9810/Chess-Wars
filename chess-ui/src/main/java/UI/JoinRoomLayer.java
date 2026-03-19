@@ -7,15 +7,11 @@ import javafx.scene.Cursor;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-
 import javafx.scene.layout.*;
-
 import java.util.Random;
-
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.util.Duration;
-
 
 public class JoinRoomLayer extends BorderPane {
 
