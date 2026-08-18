@@ -26,7 +26,7 @@ public class NetworkManager implements  WebSocket.Listener {
     public void connect(){
         HttpClient.newHttpClient()
                 .newWebSocketBuilder()
-                .buildAsync(URI.create("ws://localhost:8080/chess"),this)
+                .buildAsync(URI.create("wss://chess-wars-production-6984.up.railway.app/chess"),this)
                 .thenAccept(ws-> this.webSocket = ws);
     }
 
